@@ -1,0 +1,67 @@
+\documentclass{sig-alternate-10pt}
+\usepackage{multirow, rotating, amsmath, wasysym}
+\usepackage[tight]{subfigure} 
+\usepackage[ruled,linesnumbered,vlined]{algorithm2e} 
+\usepackage{hyperref}
+
+\usepackage{array, graphicx}
+\usepackage{subfigure}
+\usepackage{caption} 
+
+\graphicspath{{../}{figures/}}
+
+\input{new-commands} 
+\newcommand{\subfigs}{\hspace{-0.10in}} 
+
+\newcommand{\presec}{\vspace{0in}}
+\newcommand{\postsec}{\vspace{0in}}
+\newcommand{\presub}{\vspace{0in}}
+\newcommand{\postsub}{\vspace{0in}}
+\newcommand{\precaption}{\vspace{0in}}
+\newcommand{\postcaption}{\vspace{0in}}
+\newcommand{\preequation}{\vspace{0in}}
+\newcommand{\postequation}{\vspace{0in}}
+\newcommand{\prefig}{\vspace{0in}}
+\newcommand{\prefigcaption}{\vspace{0in}}
+\newcommand{\postfig}{\vspace{0in}} 
+\newcommand{\subfigsvert}{\vspace{0in}}
+\newcommand{\pretheorem}{\vspace{0in}}
+\newcommand{\posttheorem}{\vspace{0in}}
+
+
+\newcommand{\Proc}{Proc. }
+\newcommand{\Conf}{Conf. }
+\newcommand{\Inte}{Int. }
+
+\title{Learn to be Poetic:\\ 
+Automatic Generation of Chinese Song Iambics Using RNN}
+\numberofauthors{3}
+\author{ 
+\alignauthor
+Nan Du\\
+       \email{dunan00001@gmail.com} 
+\alignauthor
+Wei Wang\\
+       \email{wangwe90@msu.edu}
+\alignauthor
+Zhuangdi Zhu\\
+	\email{zhuzhuan@msu.edu}
+}
+% There's nothing stopping you putting the seventh, eighth, etc.
+% author on the opening page (as the 'third row') but we ask,
+% for aesthetic reasons that you place these 'additional authors'
+% in the \additional authors block, viz.
+\begin{document}
+\maketitle
+
+ 
+\sloppy{
+\input{sections/Abstract} 
+\vspace{0.1in}
+\input{sections/ProblemDescription}
+\input{sections/RelatedWork}
+\input{sections/ProjectMilestones}
+}
+\bibliographystyle{abbrv}
+\bibliography{proposal} 
+\end{document}
