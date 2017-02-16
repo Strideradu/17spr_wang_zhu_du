@@ -3,6 +3,4 @@
 
 1.To compile the latex: compile the main.tex
 
-2.To add a new section: add the following command in main.tex
-    input{sections/mySectionTitle}
-and then create a new tex file named mySectionTitle.tex in 'sections' folder.
+2.To add a new section: add the following command in main.tex:   input{sections/mySectionTitle} and create a new tex file named mySectionTitle.tex in 'sections' folder.
