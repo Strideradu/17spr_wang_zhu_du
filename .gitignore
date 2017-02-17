@@ -178,4 +178,5 @@ TSWLatexianTemp*
 
 # KBibTeX
 *~[0-9]*
-*.pdf
+main.pdf
+Proposal/sigkddExp.pdf
