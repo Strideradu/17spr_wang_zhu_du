@@ -1,12 +1,18 @@
  % !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17Project/17spr_wang_zhu_du/Proposal/main.tex
 \section{Related Work}  
-Approaches to poetry automatic generation can be divided into the following categories
-\begin{itemize}
-\item Approaches using rules and templates. This method meets requirements grammaticality, but perform poorly on meaningfulness and poeticness.
-\item Approaches using evolutionary algorithms. Natural selection.
-\item Another approach is based on the methods for the generation of other kinds of texts.
-statistical machine translations (SMT).
-\item Approaches using neural network.  Wang \etal adopted an RNN Encoder-Decoder structure\cite{wang2016chinese}. They generate new iambics context using previously-generated contexts. The rationale of their approach is that, in Chinese poems, two consecutive liens have high semantical relevance. They use attention mechanism \cite{bahdanau2014neural}.
-
-We train the model to generate Song Iambics based on Chinese characters.
-\end{itemize}
+Approaches to poetry automatic generation can be divided into the following categories.
+\begin{description}
+\item [Using rules and templates.] 
+%
+This approach adopts templates to generate poems that comply with grammatical rules, such as the rhythms, lines, and word frequencies\cite{wu2009new,tosa2008hitch}. 
+%
+However, this approach perform poorly on semantical and poetic requirements.
+\item [Using evolutionary algorithms.] This approach is mainly based on evaluation algorithms and search algorithms
+%
+Natural selection.
+\item [Using statistical machine translations (SMT).] 
+%Another approach is based on the methods for the generation of other kinds of texts.
+\item [Using neural network.]  This approach adopts an RNN Encoder-Decoder structure \cite{wang2016chinese,bahdanau2014neural}. 
+%
+They generate new iambics context using previously-generated contexts. The rationale of this approach is that, in Chinese poems, two consecutive liens have high semantical relevance.
+\end{description}
