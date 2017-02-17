@@ -1,1 +1,12 @@
+ % !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17Project/17spr_wang_zhu_du/Proposal/main.tex
 \section{Related Work}  
+Approaches to poetry automatic generation can be divided into the following categories
+\begin{itemize}
+\item Approaches using rules and templates. This method meets requirements grammaticality, but perform poorly on meaningfulness and poeticness.
+\item Approaches using evolutionary algorithms. Natural selection.
+\item Another approach is based on the methods for the generation of other kinds of texts.
+statistical machine translations (SMT).
+\item Approaches using neural network.  Wang \etal adopted an RNN Encoder-Decoder structure\cite{wang2016chinese}. They generate new iambics context using previously-generated contexts. The rationale of their approach is that, in Chinese poems, two consecutive liens have high semantical relevance. They use attention mechanism \cite{bahdanau2014neural}.
+
+We train the model to generate Song Iambics based on Chinese characters.
+\end{itemize}
