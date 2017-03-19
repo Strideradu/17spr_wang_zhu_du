@@ -180,3 +180,9 @@ TSWLatexianTemp*
 *~[0-9]*
 #main.pdf
 Proposal/sigkddExp.pdf
+
+#programming
+*.pyc
+
+#Mac OS 
+*.DS_Store
