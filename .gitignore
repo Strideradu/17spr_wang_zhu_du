@@ -178,5 +178,11 @@ TSWLatexianTemp*
 
 # KBibTeX
 *~[0-9]*
-main.pdf
+#main.pdf
 Proposal/sigkddExp.pdf
+
+#programming
+*.pyc
+
+#Mac OS 
+*.DS_Store
