@@ -32,13 +32,13 @@ We give a visualized result in Figure \ref{fig:VSM}. The figure is embeded with 
 	\caption{Vector Space Model}
 	\label{fig:VSM}	
 \end{figure} 
-
 \subsubsection{ Implementation of a RNN + LSTM Model  }   
 We implement a preliminary version of our model. It is a special kind of RNN with Long Short Term Memory units (LSTM), which can capture long-term dependencies.
 %
-The reason of adding LSTM to our model is that,  different from Tang poetry, Song Ci has more content  and is variant in styles.
+The reasonale of applying LSTM to our model is that,  different from Tang poetry, Song Ci has more content  and is variant in styles.
 %
-We may lose the coherent meaning of generated Song Ci without backtracking previous context.
+We may lose the coherent meaning of the generated Song Ci without backtracking previous context.
+%
 
 %VSMs have a long, rich history in NLP, but all methods depend in some way or another on the Distributional Hypothesis, which states that words that appear in the same contexts share semantic meaning. The different approaches that leverage this principle can be divided into two categories: count-based methods (e.g. Latent Semantic Analysis), and predictive methods (e.g. neural probabilistic language models).
 %Test cases will be generated with both poem generator under the same keywords and topics. Poems will be test on aspects of grammar, semantic correctness, style and content. Both computational evaluation and human evaluation are expected to be used in last part of our project.
