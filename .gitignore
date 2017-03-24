@@ -11,6 +11,9 @@
 *.cb
 *.cb2
 
+##
+matplotlib
+
 ## Intermediate documents:
 *.dvi
 *-converted-to.*
