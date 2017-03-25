@@ -4,11 +4,17 @@
 \subsection{Completed Milestones}
 %
 \subsubsection{Background Survey}
- For this initial step, we plan to search for related works to computational literary creation to gain the basic knowledge of Song Ci.
+% For this initial step, we plan to search for related works to computational literary creation to gain the basic knowledge of Song Ci.
 %
-We are interested in the following questions: what is the criterion of a good Song Ci? How to evaluate the correctness, fluency and style of poems generated?
+We conducted large amount of survey on the state of the art approaches of SongCi generation. 
 %
-Better understanding of related work and Song Ci composition rules will provide us with great help for the following work, especially algorithm testing and comparison.
+We find that this task attracts many interests both from the Natural Language Processing area and Machine Learning area. 
+%
+The approaches can be generalized into two kinds:  We either specify the generation rules (using templates), or build a model which can learn these rules automatically ( using neural network).
+%
+We also implemented some of the approaches proposed in previous work.
+% 
+% 
 %
 \subsubsection {Corpus Search and Analysis}
 %
@@ -31,7 +37,7 @@ The dataset we use contains 18668 Ci, which contains a total number of 1183 poet
 Word frequency analysis is to statistic and analyze the number of important words in the text, which is an important method of text mining. It is a traditional and useful content analysis method. The basic principle is to determine the overall style and theme of the entire article by the frequency of the words. By analyzing the word frequency in the poems, we have a general understanding of the style of poems and the process of writing those the poem, which can help us get more familiar with the grammar rules and themes of Ci. The most commonly used words can reveal common theme of Ci and the corresponding feelings. For example, we analyzed word frequency of season in our database. The result is shown in Figure \ref{fig:season}. We found that spring related words reached 2606, these words appeared in our dataset for 9210 times. Followed by autumn, there are 1167 words associated with autumn and appeared 3992 times. The unique scene in spring and autumn can trigger people's emotions, which might be the reason that so many poems are related with these two seasons.
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.9\linewidth]{season.png}
+	\includegraphics[width=0.8\linewidth]{season.png}
 	\caption{Statistical Data of Season Related Word Frequency in Dataset}
 	\label{fig:season}
 \end{figure}
@@ -51,7 +57,9 @@ We implemented this model to find the semantic relations between each Chinese ch
 %
 %We use a predictive method to implement this  model based on the TensorFlow programming package \cite{tensorflow}.
 %
-We give a visualized result in Figure \ref{fig:VSM}. The figure is embeded with 100 Chinese characters in a 2-D space, which are randomly chosen from the most frequent 500 Chinese characters in the Song Ci corpus. The 2-D space corresponds to the first two dimensions in the vector space.
+We give a visualized result in Figure \ref{fig:VSM}. The figure is embeded with 100 Chinese characters in a 2-D space, which are randomly chosen from the most frequent 500 Chinese characters in the Song Ci corpus. The 2-D space corresponds to the first two dimensions in the vector space. We can see that words such as `spring', `sunny', and `breeze' are very close in the 2-D space, which convey similar sentimental feelings to readers. 
+
+
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.9\linewidth]{tsne.png}
@@ -59,24 +67,17 @@ We give a visualized result in Figure \ref{fig:VSM}. The figure is embeded with 
 	\label{fig:VSM}
 \end{figure}
 \subsubsection{ Implementation of a RNN + LSTM Model  }
-We implement a preliminary version of our model. It is a special kind of RNN with Long Short Term Memory units (LSTM), which can capture long-term dependencies.
+We implement a preliminary version of our model. It is a RNN model with Long Short Term Memory units (LSTM), which can capture long-term dependencies. 
 %
-The reasonale of applying LSTM to our model is that,  different from Tang poetry, Song Ci has more content  and is variant in styles.
+We used deep learning packages called \emph{TensorFlow} \cite{tensorflow} to implement our model. The code is written in Python.
 %
-We may lose the coherent meaning of the generated Song Ci without backtracking previous context.
-%
-
-%VSMs have a long, rich history in NLP, but all methods depend in some way or another on the Distributional Hypothesis, which states that words that appear in the same contexts share semantic meaning. The different approaches that leverage this principle can be divided into two categories: count-based methods (e.g. Latent Semantic Analysis), and predictive methods (e.g. neural probabilistic language models).
-%Test cases will be generated with both poem generator under the same keywords and topics. Poems will be test on aspects of grammar, semantic correctness, style and content. Both computational evaluation and human evaluation are expected to be used in last part of our project.
-%Third, implementation poem generator based on both algorithm of RNN and genetic algorithm would be the most important work in our project. So we will assign more time on this step.
-%
-We present a prelimanry result in Figure \ref{fig:poetry}.
+We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain poem. We can see that the poem conveys a feeling: the loneliness during travel. 
 
 
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.8\linewidth]{poetry}
-	\caption{A poetry generated using RNN+LSTM model}
+	\includegraphics[width=0.5\linewidth]{poetry}
+	\caption{A quatrain poem generated using RNN+LSTM model}
 	\label{fig:poetry}
 \end{figure}
 
@@ -84,5 +85,15 @@ We present a prelimanry result in Figure \ref{fig:poetry}.
 \subsection{Remaining Milestones}
 %
 \subsubsection{Implementation of Song Ci Generating Model }
+We used the Tang poetry corpus to train our model so the generated poem looks more like Tang poem than Song Ci. 
+%
+In our next step, we will explore the Song Ci dataset and focus on generating Song Ci poems.
+%
+We will continue to explore approaches to improve the performance of our model.
+
 \subsubsection{Model Testing and Comparison}
-\subsubsection{Project Writing}
+We plan to use the valuation tools BLEU \cite{papineni2002bleu} to analyze the performance of the model. We will also compare the performance of our model with models proposed by state-of-the-art approaches.
+\subsubsection{Project Writing} We will start on writting our project as we conduct the performance evaluation step. We plan to spend one week on the writting.
+
+
+
