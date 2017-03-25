@@ -30,18 +30,14 @@ Next, the system will receive few of keyword inputs that capture the detailed se
 %
 Then it will generate the first sentence of the poetry based on the above two inputs.
 %
-Further, the system generate following sentences based on previously-generated contexts using both RNN. 
+Further, the system generates the following sentences based on previously-generated contexts using both RNN. 
 %
 To achieve that, we add LSTM units into the model iteration step in order to capture semantic relevance in long distance. 
 %
-Finally, we can evaluate the quality of the generated Ci using an evaluation tool named BLEU.
+Finally, we will evaluate the quality of the generated Ci using an evaluation tool named BLEU.
 
 \subsection{Technical Challenges and Proposed Solutions} 
-The first challenge is to generate features 
-%
-Our solution is 
-
-The second challenge to build a general model for all types of Song Ci.
+The first challenge to build a general model for all types of Song Ci.
 %
 Different from Shi poetry whose structure is strict,  Song Ci has more than 800 set of Cipai, and different Cipai follows different structural or rhythmic patterns.
 %
@@ -51,7 +47,15 @@ Our solution is to create a model based on Recurrent Neural Network. For every l
 %
 So that the grammatical and rhythmic rules can be automatically captured.
 
-Another challenge is to maintain consistent and poetic meanings throughout the generated SongCi.
+
+The second challenge is to extract useful features from our training corpus.
+%
+Inappropriate feature extraction approach may lose the semantic meaning of each character which leads to meaningless outputs from the system.
+%
+Our solution is to build a vector space model to pre-process the poetry corpus. We first tokenize each Chinese character in the corpus, and then represent each character as a vector which retains the semantic relations among different characters. Therefore, characters with similar meanings have smaller distance in the vector space, while characters that are irrelevant in meanings have larger distance. 
+
+
+The third challenge is to maintain consistent and poetic meanings throughout the generated SongCi.
 %
 Compared with Shi poetry, Song Ci are much longer in length and therefore more complicated in context.
 %
