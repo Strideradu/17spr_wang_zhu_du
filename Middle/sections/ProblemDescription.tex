@@ -1,11 +1,10 @@
 % !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17Project/17spr_wang_zhu_du/Middle/middle_report.tex
 \section{Problem Description}
-\subsection{Motivation} 
-\judy{To be extened}
+\subsection{Motivation}  
 %
 In this project, we propose and evaluate different approaches to automatically generate Chinese poems. 
 %
-Especially, we study how to automatically generate Chinese Ci using machine learning skills.
+Especially, we study how to automatically generate Chinese Song Ci using Recurrent Neural Networks.
 %
 Ci are one of the most important genres of Chinese classical poetry. 
 %
@@ -15,39 +14,42 @@ Therefore, the study of automatic generation of Ci is meaningful, not only becau
 %
 
 \subsection{Background}
-\judy{To be extened}
-%
-Ci is a form of Chinese classical poetry. It arose with the so-called banquet music in Tang dynasty and reached its peak one hundred years later, as a major alternative to Shi poetry\cite{cai2008chinesepoetry} .
+Song Ci is a form of Chinese classical poetry. It arose with the so-called banquet music in Tang dynasty and reached its peak one hundred years later, as a major alternative to Shi poetry\cite{cai2008chinesepoetry} .
 
 Derived from the structure used in Tang poetry, Ci follows strict rule determining the number of characters for different lines, the arrangement of rhyme, and the location of tones. There are more than 800 rule sets for Ci, which is called Cipai\cite{wikici}. The author of Ci needs to fill in the words according to the matrix associated to the Cipai. The uneven lines in Ci follow more continuous syntax than traditional Chinese Tang poetry\cite{cai2008chinesepoetry}.
 
-\subsection{Proposed Approach}
-\judy{To be extened}
+\subsection{Proposed Approach} 
 %
-We propose an AI system which generate Ci in an interactive approach.
+We propose a Recurrent Neural Network model with Long Short Term Memory (LSTM) units to generate Song Ci automatically. .
 %
-First, our system will prompt the user to provide a Cipai name.
+First, our system will prompt the user to provide a Cipai name which defines the style of the poem.
 %
-Because Ci belonging to different Cipai may contain different emotions or grammatical rules.
+As Ci belonging to different Cipai conveys different grammatical rules and emotions.
 %
-Next, the system will receive few of keyword inputs that convey the detailed sentiments of the Song Ci.
+Next, the system will receive few of keyword inputs that capture the detailed sentiments of the Song Ci.
 %
-the first sentence of the iambic will be generated based on the keyword inputs.
+Then it will generate the first sentence of the poetry based on the above two inputs.
 %
-Further, the system generate following sentences based on previously-generated contexts using both RNN and SMT technique.
+Further, the system generate following sentences based on previously-generated contexts using both RNN. 
 %
-Finally, we evaluate the quality of the generated Ci using an evaluation tool named BLEU.
+To achieve that, we add LSTM units into the model iteration step in order to capture semantic relevance in long distance. 
+%
+Finally, we can evaluate the quality of the generated Ci using an evaluation tool named BLEU.
 
-\subsection{Technical Challenges and Proposed Solutions}
-\judy{To be extened}
+\subsection{Technical Challenges and Proposed Solutions} 
+The first challenge is to generate features 
 %
-The first challenge to build a general model for all types of Song Ci.
+Our solution is 
+
+The second challenge to build a general model for all types of Song Ci.
 %
 Different from Shi poetry whose structure is strict,  Song Ci has more than 800 set of Cipai, and different Cipai follows different structural or rhythmic patterns.
 %
-Therefore, it is difficult to generalize a model for all the Song Ci from limited training dataset.
+Therefore, it is difficult to generalize templates or rules for all the Song Ci from limited training dataset.
 % 
 Our solution is to create a model based on Recurrent Neural Network. For every line generated in the SongCi, its probability is based on the probability of all previously lines.
+%
+So that the grammatical and rhythmic rules can be automatically captured.
 
 Another challenge is to maintain consistent and poetic meanings throughout the generated SongCi.
 %
@@ -55,4 +57,4 @@ Compared with Shi poetry, Song Ci are much longer in length and therefore more c
 %
 It is difficult to keep long-distance memory using conventional RNN.
 % 
-Our solution is to use a Long Short Term Memory (LSTM) model that can track the long-distance information. 
+Our solution is to use a Long Short Term Memory (LSTM) model that can track the long-distance semantic information automatically. 
