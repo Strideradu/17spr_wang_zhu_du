@@ -1,6 +1,7 @@
 % !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17Project/17spr_wang_zhu_du/Middle/middle_report.tex
 \section{Data Description}   
-\judy{To be filled ...}
+For our experiment, we obtained dataset for both Tang Shi and Song Ci. Many research projects were conducted for automatically generating Tang Shi. So we can evaluate our experiment result by comparing with these machine-created Tang Shi. And then we can move forward to Song Ci.
 \subsubsection{Tang Poetry Corpus}
- 
+We use Quan Tangshi as our Tang Poetry corpus.\cite{1960quantangshi}. It was commissioned by Yin Cao in 1705 and published under the name of Kangxi Emperor. It contains 49,000 lyric poems (in the dataset we used it has 49,274 poems) and is believed the largest collection of Tang poetry. We obtained the dataset from the server of \cite{zhang2014chinese}. The dataset is well organized and is ready to use as the input of our experiments.
 \subsubsection{Song Ci Corpus}
+We download the Quan Song Ci dataset as our corpus for Song Ci. Quan Song Ci collected 21,116 Song Ci poems (Data set we used contains 18986 poems). Although there are several previous projects, unlike the parsed Tang Poetry Corpus, the dataset we can get is not well-formatted. For our analysis, preprocessing is conducted in the following steps: First, we extracted the name of all poets from the list in collections. Second, then we can distinguish those lines of names and those lines of poems. Third, we filtered the length of text smaller that certain number and without any period in it. Most titles are just the Cipai, some may contain a subtopic. We treat Cipai separately as it set the format of the poem. Fourth, we then identify the title of poems with its main text. Finally, we generate a tab separated file for further process.
