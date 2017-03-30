@@ -10,7 +10,8 @@ import numpy as np
 BEGIN_CHAR = '^'
 END_CHAR = '$'
 UNKNOWN_CHAR = '*'
-MAX_LENGTH = 100
+MAX_TANG_LENGTH = 100
+MIN_SONG_LENGTH = 56
 
 class TextLoader():
 
@@ -23,25 +24,60 @@ class TextLoader():
 
         #input_file = os.path.join(data_dir, "poems.txt")
         #input_file = os.path.join("../Data","tangshi.txt")
-        input_file = os.path.join(data_dir, "tangshi.txt")
+        input_file = os.path.join(data_dir, "qts_without_tab.txt")
+        input_file = os.path.join(data_dir, "qss_tab.txt")
         vocab_file = os.path.join(data_dir, "vocab.pkl")
         tensor_file = os.path.join(data_dir, "data.npy")
 
         if not (os.path.exists(vocab_file) and os.path.exists(tensor_file)):
             print("reading text file")
-            self.preprocess(input_file, vocab_file, tensor_file)
+            if 'without_tab' in input_file:
+                self.preprocess_with_tab(input_file, vocab_file, tensor_file)
+            else:
+                self.preprocess_without_tab(input_file, vocab_file, tensor_file)
         else:
             print("loading preprocessed files")
             self.load_preprocessed(vocab_file, tensor_file)
         self.create_batches()
         self.reset_batch_pointer()
 
-    def preprocess(self, input_file, vocab_file, tensor_file):
+
+    def preprocess_with_tab(self,input_file,vocab_file,tensor_file):
+        def handle_poem_with_tab(line):
+            # MIN_SONG_LENGTH = 56
+            # remove label, title, and author from each line
+            sentences = line.split()
+            sentences = sentences[3:]
+            line = ''.join(sentences)
+            line = line.replace(' ','')
+            if len(line) <= MIN_SONG_LENGTH:
+                continue
+            return BEGIN_CHAR+line+END_CHAR
+
+        with codecs.open(input_file, "r", encoding=self.encoding) as f:
+            lines = list(map(handle_poem_with_tab,f.read().strip().split('\n')))
+
+        counter = collections.Counter(reduce(lambda data,line: line+data,lines,''))
+        count_pairs = sorted(counter.items(), key=lambda x: -x[1])
+        chars, _ = zip(*count_pairs)
+        self.vocab_size = min(len(chars),self.max_vocabsize - 1) + 1
+        self.chars = chars[:self.vocab_size-1] + (UNKNOWN_CHAR,)
+        self.vocab = dict(zip(self.chars, range(len(self.chars))))
+        unknown_char_int = self.vocab.get(UNKNOWN_CHAR)
+        with open(vocab_file, 'wb') as f:
+            cPickle.dump(self.chars, f)
+        get_int = lambda char: self.vocab.get(char,unknown_char_int)
+        lines = sorted(lines,key=lambda line: len(line))
+        self.tensor = [ list(map(get_int,line)) for line in lines ]
+        with open(tensor_file,'wb') as f:
+            cPickle.dump(self.tensor,f)
+
+    def preprocess_without_tab(self, input_file, vocab_file, tensor_file):
         def handle_poem(line):
             line = line.replace(' ','')
-            if len(line) >= MAX_LENGTH:
-                index_end = line.rfind(u'。',0,MAX_LENGTH)
-                index_end = index_end if index_end > 0 else MAX_LENGTH
+            if len(line) >= MAX_TANG_LENGTH:
+                index_end = line.rfind(u'。',0,MAX_TANG_LENGTH)
+                index_end = index_end if index_end > 0 else MAX_TANG_LENGTH
                 line = line[:index_end+1]
             return BEGIN_CHAR+line+END_CHAR
 

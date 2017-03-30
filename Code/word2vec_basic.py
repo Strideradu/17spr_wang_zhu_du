@@ -37,6 +37,7 @@ from six.moves import urllib
 from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
 
+#####################################
 # Step 1: Download the data.
 url = 'http://mattmahoney.net/dc/'
 
@@ -54,11 +55,6 @@ def maybe_download(filename, expected_bytes):
         'Failed to verify ' + filename + '. Can you get to it with a browser?')
   return filename
 
-#####################################
-#filename = maybe_download('text8.zip', 31344016)
-#####################################
-
-
 # Read the data into a list of strings.
 def read_data(filename):
   """Extract the first file enclosed in a zip file as a list of words"""
@@ -67,20 +63,26 @@ def read_data(filename):
   return data
 
 
+filename = maybe_download('text8.zip', 31344016)
+words = read_data(filename)
+#####################################
+
+
+
 
 
 ####################################
+# Our Step 1: open the file
 def open_file(filename):
     data = open(filename).read().decode('utf-8')
     return data
 
 
-filename = './17spr_wang_zhu_du/Data/tangshi.txt'
-filename = './17spr_wang_zhu_du/Data/quansongci_tsv.txt'
-words = open_file(filename)
+#filename = './17spr_wang_zhu_du/Data/tangshi.txt'
+#filename = './17spr_wang_zhu_du/Data/quansongci_tsv.txt'
+#words = open_file(filename)
 ####################################
 
-#words = read_data(filename)
 print('Data size', len(words))
 
 # Step 2: Build the dictionary and replace rare words with UNK token.
@@ -150,6 +152,8 @@ def generate_batch(batch_size, num_skips, skip_window):
       while target in targets_to_avoid:
         target = random.randint(0, span - 1)
       targets_to_avoid.append(target)
+    #targets_to_avoid: a random permutation of numbers chosen from 0 - span - 1,
+    #with the first element to be skip_window
 
       batch[i * num_skips + j] = buffer[skip_window]
       labels[i * num_skips + j, 0] = buffer[target]
@@ -160,10 +164,12 @@ def generate_batch(batch_size, num_skips, skip_window):
   return batch, labels
 
 batch, labels = generate_batch(batch_size=8, num_skips=2, skip_window=1)
-#for i in range(8):
-#  print(batch[i], reverse_dictionary[batch[i]],
-#        '->', labels[i, 0], reverse_dictionary[labels[i, 0]])
+for i in range(8):
+    print(len(batch))
+    print(batch[i], reverse_dictionary[batch[i]],
+          '->', labels[i, 0], reverse_dictionary[labels[i, 0]])
 
+'''
 # Step 4: Build and train a skip-gram model.
 
 batch_size = 128
@@ -296,3 +302,4 @@ try:
 
 except ImportError:
   print("Please install sklearn, matplotlib, and scipy to visualize embeddings.")
+'''
