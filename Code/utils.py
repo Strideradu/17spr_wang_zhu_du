@@ -10,12 +10,13 @@ import numpy as np
 BEGIN_CHAR = '^'
 END_CHAR = '$'
 UNKNOWN_CHAR = '*'
+MAX_VOCAB_SIZE = 3000
 MAX_TANG_LENGTH = 100
 MIN_SONG_LENGTH = 56
 
 class TextLoader():
 
-    def __init__(self, batch_size, max_vocabsize=3000, encoding='utf-8'):
+    def __init__(self, batch_size, max_vocabsize=MAX_VOCAB_SIZE, encoding='utf-8'):
         self.batch_size = batch_size
         self.max_vocabsize = max_vocabsize
         self.encoding = encoding
@@ -26,15 +27,14 @@ class TextLoader():
         #input_file = os.path.join("../Data","tangshi.txt")
         input_file = os.path.join(data_dir, "qts_without_tab.txt")
         input_file = os.path.join(data_dir, "qss_tab.txt")
+        input_file = os.path.join(data_dir,"quansongci_tab.txt")
         vocab_file = os.path.join(data_dir, "vocab.pkl")
         tensor_file = os.path.join(data_dir, "data.npy")
 
+        self.preprocess(input_file, vocab_file, tensor_file)
         if not (os.path.exists(vocab_file) and os.path.exists(tensor_file)):
             print("reading text file")
-            if 'without_tab' in input_file:
-                self.preprocess_with_tab(input_file, vocab_file, tensor_file)
-            else:
-                self.preprocess_without_tab(input_file, vocab_file, tensor_file)
+            self.preprocess(input_file, vocab_file, tensor_file)
         else:
             print("loading preprocessed files")
             self.load_preprocessed(vocab_file, tensor_file)
@@ -42,8 +42,8 @@ class TextLoader():
         self.reset_batch_pointer()
 
 
-    def preprocess_with_tab(self,input_file,vocab_file,tensor_file):
-        def handle_poem_with_tab(line):
+    def preprocess(self, input_file, vocab_file, tensor_file):
+        def handle_poem_with_title(line):
             # min_song_length = 56
             # remove label, title, and author from each line
             sentences = line.split()
@@ -54,26 +54,7 @@ class TextLoader():
                 line = ''
             return BEGIN_CHAR+line+END_CHAR
 
-        with codecs.open(input_file, "r", encoding=self.encoding) as f:
-            lines = list(map(handle_poem_with_tab,f.read().strip().split('\n')))
-
-        counter = collections.Counter(reduce(lambda data,line: line+data,lines,''))
-        count_pairs = sorted(counter.items(), key=lambda x: -x[1])
-        chars, _ = zip(*count_pairs)
-        self.vocab_size = min(len(chars),self.max_vocabsize - 1) + 1
-        self.chars = chars[:self.vocab_size-1] + (UNKNOWN_CHAR,)
-        self.vocab = dict(zip(self.chars, range(len(self.chars))))
-        unknown_char_int = self.vocab.get(UNKNOWN_CHAR)
-        with open(vocab_file, 'wb') as f:
-            cPickle.dump(self.chars, f)
-        get_int = lambda char: self.vocab.get(char,unknown_char_int)
-        lines = sorted(lines,key=lambda line: len(line))
-        self.tensor = [ list(map(get_int,line)) for line in lines ]
-        with open(tensor_file,'wb') as f:
-            cPickle.dump(self.tensor,f)
-
-    def preprocess_without_tab(self, input_file, vocab_file, tensor_file):
-        def handle_poem(line):
+        def handle_poem_without_title(line):
             line = line.replace(' ','')
             if len(line) >= MAX_TANG_LENGTH:
                 index_end = line.rfind(u'。',0,MAX_TANG_LENGTH)
@@ -81,20 +62,60 @@ class TextLoader():
                 line = line[:index_end+1]
             return BEGIN_CHAR+line+END_CHAR
 
-        with codecs.open(input_file, "r", encoding=self.encoding) as f:
-            lines = list(map(handle_poem,f.read().strip().split('\n')))
+        def handle_songci_with_title(line):
+            sentences = line.split()
+            sentences = sentences[1:]
+            line = ''.join(sentences)
+            line = line.replace(' ','')
+            if len(line) <= MIN_SONG_LENGTH:
+                line = ''
+            return BEGIN_CHAR+line+END_CHAR
 
+        if 'without' in input_file:
+            print('Processing Tangshi dataset ..')
+            with codecs.open(input_file, "r", encoding=self.encoding) as f:
+                lines = list(map(handle_poem_without_title,f.read().strip().split('\n')))
+        elif 'quansongci' in input_file:
+            print('Processing Quan Song Ci dataset ..')
+            with codecs.open(input_file, "r", encoding=self.encoding) as f:
+                lines = list(map(handle_songci_with_title,f.read().strip().split('\n')))
+        else:
+            with codecs.open(input_file, "r", encoding=self.encoding) as f:
+                lines = list(map(handle_poem_with_title,f.read().strip().split('\n')))
+
+        print("Number of Song Ci:" + str(len(lines)))
+
+        # counter: similar to a dictionary {word:occurence count} --By Judy
         counter = collections.Counter(reduce(lambda data,line: line+data,lines,''))
+        # counter_pairs: sorted list [(word:occurence count)] in decreasing
+        # order -- By Judy
         count_pairs = sorted(counter.items(), key=lambda x: -x[1])
+
+        # chars: a tuple of unique Chinese characters, in order of decreasing
+        # occurence count. -- By Judy
         chars, _ = zip(*count_pairs)
+
+        # vocab_size: word_count + 1, and 1 is for '*'. --By Judy
         self.vocab_size = min(len(chars),self.max_vocabsize - 1) + 1
+
+        # chars: a tuple, updated, and the last elment is '*'. --By Judy
         self.chars = chars[:self.vocab_size-1] + (UNKNOWN_CHAR,)
+
+        # vocab: a dict {word:ID}. iD is assigned by order of decreasing occurence
+        # count. -- By Judy
         self.vocab = dict(zip(self.chars, range(len(self.chars))))
+
         unknown_char_int = self.vocab.get(UNKNOWN_CHAR)
         with open(vocab_file, 'wb') as f:
             cPickle.dump(self.chars, f)
+
+        # get int: a temporary function which returns the ID of an input word.
+        # If the word does not exist, return the ID of '*'. --By Judy
         get_int = lambda char: self.vocab.get(char,unknown_char_int)
         lines = sorted(lines,key=lambda line: len(line))
+
+        # tensor: a list of sentences. in each sentence, the character is
+        # transformed to its associated ID. --By Judy
         self.tensor = [ list(map(get_int,line)) for line in lines ]
         with open(tensor_file,'wb') as f:
             cPickle.dump(self.tensor,f)
@@ -117,11 +138,18 @@ class TextLoader():
         for i in range(self.num_batches):
             from_index = i * self.batch_size
             to_index = from_index + self.batch_size
+            # batches: batch_size poems
             batches = self.tensor[from_index:to_index]
+
+            # seq_length: number of characters in the longest poem in batches
             seq_length = max(map(len,batches))
+
+            # xdata: a matrix of size batch_size X seq_length, inital valuse =
+            # unknown_char_int
             xdata = np.full((self.batch_size,seq_length),unknown_char_int,np.int32)
             for row in range(self.batch_size):
                 xdata[row,:len(batches[row])] = batches[row]
+
             ydata = np.copy(xdata)
             ydata[:,:-1] = xdata[:,1:]
             self.x_batches.append(xdata)
