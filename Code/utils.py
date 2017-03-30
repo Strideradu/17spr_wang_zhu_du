@@ -44,14 +44,14 @@ class TextLoader():
 
     def preprocess_with_tab(self,input_file,vocab_file,tensor_file):
         def handle_poem_with_tab(line):
-            # MIN_SONG_LENGTH = 56
+            # min_song_length = 56
             # remove label, title, and author from each line
             sentences = line.split()
             sentences = sentences[3:]
             line = ''.join(sentences)
             line = line.replace(' ','')
             if len(line) <= MIN_SONG_LENGTH:
-                continue
+                line = ''
             return BEGIN_CHAR+line+END_CHAR
 
         with codecs.open(input_file, "r", encoding=self.encoding) as f:
