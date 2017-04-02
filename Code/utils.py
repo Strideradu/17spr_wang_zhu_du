@@ -23,8 +23,6 @@ class TextLoader():
 
         data_dir = '../Data'
 
-        #input_file = os.path.join(data_dir, "poems.txt")
-        #input_file = os.path.join("../Data","tangshi.txt")
         input_file = os.path.join(data_dir, "qts_without_tab.txt")
         input_file = os.path.join(data_dir, "qss_tab.txt")
         input_file = os.path.join(data_dir,"quansongci_tab.txt")
@@ -32,9 +30,14 @@ class TextLoader():
         tensor_file = os.path.join(data_dir, "data.npy")
 
         self.cipai_list = self.get_cipai_list(input_file)
-        line_list = self.get_lines_with_specified_cipai(self.cipai, input_file)
+        line_list = self.get_lines_with_specified_cipai(input_file)
 
+
+        ######################################
+        # preprocess is the most key function we need to revise. -- By Judy
         self.preprocess(line_list, input_file, vocab_file, tensor_file)
+        ######################################
+
         #if not (os.path.exists(vocab_file) and os.path.exists(tensor_file)):
         #    print("reading text file")
         #    self.preprocess(line_list, input_file, vocab_file, tensor_file)
@@ -50,26 +53,30 @@ class TextLoader():
             sentences = line.split()
             return sentences[1]
         with codecs.open(input_file, "r", encoding=self.encoding) as f:
-            cipai_list = map(extract_cipai,f.read().strip().split('\n'))
-        cipai_list = list(collections.Counter(cipai_list))
-        cipai_list = sorted(cipai_list,key=lambda x: -x[1])
+            cipai_list = list(map(extract_cipai,f.read().strip().split('\n')))
+
+        cipai_list = list(collections.Counter(cipai_list).items())
+
+        cipai_list = sorted(cipai_list,key=lambda x: x[1],reverse=True)
         cipai_list = [cipai_pair[0] for cipai_pair in cipai_list]
         print("Ci Pai number: "+ str(len(cipai_list)))
         print("Most common cipai: "+ cipai_list[0])
         return cipai_list
 
 
-    def get_lines_with_specified_cipai(self, cipai, input_file):
-        def keep_line(line,n):
+    def get_lines_with_specified_cipai(self, input_file, selected_cipai_index=0):
+        selected_cipai = self.cipai_list[selected_cipai_index]
+        def keep_line(line,n,selected_cipai):
             sentences = line.split()
-            if cipai == sentences[1]:
+            if selected_cipai == sentences[1]:
                 return_s = str(n)+' '
             else:
                 return_s = ''
             return return_s
         with codecs.open(input_file, "r", encoding=self.encoding) as f:
             poems_list = f.read().strip().split('\n')
-        number_list= list(map(keep_line, poems_list, range(len(poems_list))))
+        cipai = [selected_cipai for i in range(len(poems_list))]
+        number_list= list(map(keep_line, poems_list, range(len(poems_list)),cipai))
         number_list = ''.join(number_list)
         number_list = [int(i) for i in number_list.split()]
         return number_list
@@ -77,14 +84,14 @@ class TextLoader():
 
 
     def preprocess(self, line_list, input_file, vocab_file, tensor_file):
-        def handle_poem_with_title(line):
-            sentences = line.split()
-            sentences = sentences[3:]
-            line = ''.join(sentences)
-            line = line.replace(' ','')
-            if len(line) <= MIN_SONG_LENGTH:
-                line = ''
-            return BEGIN_CHAR+line+END_CHAR
+        #def handle_poem_with_title(line):
+        #    sentences = line.split()
+        #    sentences = sentences[3:]
+        #    line = ''.join(sentences)
+        #    line = line.replace(' ','')
+        #    if len(line) <= MIN_SONG_LENGTH:
+        #        line = ''
+        #    return BEGIN_CHAR+line+END_CHAR
 
         def handle_poem_without_title(line):
             line = line.replace(' ','')
@@ -96,6 +103,7 @@ class TextLoader():
 
         def handle_songci_with_title(line):
             sentences = line.split()
+            # remove title, only retain cipai and ci content
             sentences = sentences[1:]
             line = ''.join(sentences)
             line = line.replace(' ','')
@@ -103,21 +111,24 @@ class TextLoader():
                 line = ''
             return BEGIN_CHAR+line+END_CHAR
 
-        if 'without' in input_file:
-            print('Processing Tangshi dataset ..')
-            with codecs.open(input_file, "r", encoding=self.encoding) as f:
-                lines = list(map(handle_poem_without_title,f.read().strip().split('\n')))
-        elif 'quansongci' in input_file:
+        if 'quansongci' in input_file:
             print('Processing Quan Song Ci dataset ..')
             with codecs.open(input_file, "r", encoding=self.encoding) as f:
                 poems_list = f.read().strip().split('\n')
             selected_poems_list = [poems_list[i] for i in line_list]
             lines = list(map(handle_songci_with_title, selected_poems_list))
-        else:
-            with codecs.open(input_file, "r", encoding=self.encoding) as f:
-                lines = list(map(handle_poem_with_title,f.read().strip().split('\n')))
 
-        print("Number of Song Ci:" + str(len(lines)))
+        elif 'without' in input_file:  # this is for preprocessing tang shi
+            print('Processing Tangshi dataset ..')
+            with codecs.open(input_file, "r", encoding=self.encoding) as f:
+                lines = list(map(handle_poem_without_title,f.read().strip().split('\n')))
+
+        else:
+            pass
+            #with codecs.open(input_file, "r", encoding=self.encoding) as f:
+            #    lines = list(map(handle_poem_with_title,f.read().strip().split('\n')))
+
+        print("Number of Selected Song Ci:" + str(len(lines)))
 
         # counter: similar to a dictionary {word:occurence count} --By Judy
         counter = collections.Counter(reduce(lambda data,line: line+data,lines,''))
