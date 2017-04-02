@@ -10,7 +10,7 @@ import numpy as np
 BEGIN_CHAR = '^'
 END_CHAR = '$'
 UNKNOWN_CHAR = '*'
-MAX_VOCAB_SIZE = 500
+MAX_VOCAB_SIZE = 300
 MAX_TANG_LENGTH = 100
 MIN_SONG_LENGTH = 56
 
@@ -105,11 +105,11 @@ class TextLoader():
         def handle_songci_with_title(line):
             sentences = line.split()
             # remove title, only retain cipai and ci content
-            sentences = sentences[1:]
+            sentences = sentences[3:]
             line = ''.join(sentences)
             line = line.replace(' ','')
-            #if len(line) <= MIN_SONG_LENGTH:
-            #    line = ''
+            if len(line) <= MIN_SONG_LENGTH:
+                line = ''
             return BEGIN_CHAR+line+END_CHAR
 
         if 'quansongci' in input_file:
@@ -130,7 +130,6 @@ class TextLoader():
             #    lines = list(map(handle_poem_with_title,f.read().strip().split('\n')))
 
         print("Number of Selected Song Ci:" + str(len(lines)))
-        print(lines[0])
 
 
         # counter: similar to a dictionary {word:occurence count} --By Judy
