@@ -10,7 +10,7 @@ import numpy as np
 BEGIN_CHAR = '^'
 END_CHAR = '$'
 UNKNOWN_CHAR = '*'
-MAX_VOCAB_SIZE = 3000
+MAX_VOCAB_SIZE = 500
 MAX_TANG_LENGTH = 100
 MIN_SONG_LENGTH = 56
 
@@ -44,6 +44,7 @@ class TextLoader():
         #else:
         #    print("loading preprocessed files")
         #    self.load_preprocessed(vocab_file, tensor_file)
+
         self.create_batches()
         self.reset_batch_pointer()
 
@@ -107,8 +108,8 @@ class TextLoader():
             sentences = sentences[1:]
             line = ''.join(sentences)
             line = line.replace(' ','')
-            if len(line) <= MIN_SONG_LENGTH:
-                line = ''
+            #if len(line) <= MIN_SONG_LENGTH:
+            #    line = ''
             return BEGIN_CHAR+line+END_CHAR
 
         if 'quansongci' in input_file:
@@ -129,6 +130,8 @@ class TextLoader():
             #    lines = list(map(handle_poem_with_title,f.read().strip().split('\n')))
 
         print("Number of Selected Song Ci:" + str(len(lines)))
+        print(lines[0])
+
 
         # counter: similar to a dictionary {word:occurence count} --By Judy
         counter = collections.Counter(reduce(lambda data,line: line+data,lines,''))
