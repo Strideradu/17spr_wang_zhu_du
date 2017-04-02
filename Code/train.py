@@ -53,6 +53,7 @@ def train(args):
     data_loader = TextLoader(args.batch_size)
     print('finish readling file ...\n')
     args.vocab_size = data_loader.vocab_size
+    '''
 
     # check compatibility if training is continued from previously saved model
     if args.init_from is not None:
@@ -126,6 +127,7 @@ def train(args):
                     sys.stdout.write('\n')
                     print("model saved to {}".format(checkpoint_path))
             sys.stdout.write('\n')
+            '''
 
 if __name__ == '__main__':
     main()
