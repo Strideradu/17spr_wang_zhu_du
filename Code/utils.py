@@ -85,15 +85,6 @@ class TextLoader():
 
 
     def preprocess(self, line_list, input_file, vocab_file, tensor_file):
-        #def handle_poem_with_title(line):
-        #    sentences = line.split()
-        #    sentences = sentences[3:]
-        #    line = ''.join(sentences)
-        #    line = line.replace(' ','')
-        #    if len(line) <= MIN_SONG_LENGTH:
-        #        line = ''
-        #    return BEGIN_CHAR+line+END_CHAR
-
         def handle_poem_without_title(line):
             line = line.replace(' ','')
             if len(line) >= MAX_TANG_LENGTH:
@@ -108,8 +99,6 @@ class TextLoader():
             sentences = sentences[3:]
             line = ''.join(sentences)
             line = line.replace(' ','')
-            if len(line) <= MIN_SONG_LENGTH:
-                line = ''
             return BEGIN_CHAR+line+END_CHAR
 
         if 'quansongci' in input_file:
@@ -126,8 +115,6 @@ class TextLoader():
 
         else:
             pass
-            #with codecs.open(input_file, "r", encoding=self.encoding) as f:
-            #    lines = list(map(handle_poem_with_title,f.read().strip().split('\n')))
 
         print("Number of Selected Song Ci:" + str(len(lines)))
 
