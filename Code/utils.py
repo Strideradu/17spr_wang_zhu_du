@@ -31,21 +31,53 @@ class TextLoader():
         vocab_file = os.path.join(data_dir, "vocab.pkl")
         tensor_file = os.path.join(data_dir, "data.npy")
 
-        self.preprocess(input_file, vocab_file, tensor_file)
-        if not (os.path.exists(vocab_file) and os.path.exists(tensor_file)):
-            print("reading text file")
-            self.preprocess(input_file, vocab_file, tensor_file)
-        else:
-            print("loading preprocessed files")
-            self.load_preprocessed(vocab_file, tensor_file)
+        self.cipai_list = self.get_cipai_list(input_file)
+        line_list = self.get_lines_with_specified_cipai(self.cipai, input_file)
+
+        self.preprocess(line_list, input_file, vocab_file, tensor_file)
+        #if not (os.path.exists(vocab_file) and os.path.exists(tensor_file)):
+        #    print("reading text file")
+        #    self.preprocess(line_list, input_file, vocab_file, tensor_file)
+        #else:
+        #    print("loading preprocessed files")
+        #    self.load_preprocessed(vocab_file, tensor_file)
         self.create_batches()
         self.reset_batch_pointer()
 
 
-    def preprocess(self, input_file, vocab_file, tensor_file):
+    def get_cipai_list(self,input_file):
+        def extract_cipai(line):
+            sentences = line.split()
+            return sentences[1]
+        with codecs.open(input_file, "r", encoding=self.encoding) as f:
+            cipai_list = map(extract_cipai,f.read().strip().split('\n'))
+        cipai_list = list(collections.Counter(cipai_list))
+        cipai_list = sorted(cipai_list,key=lambda x: -x[1])
+        cipai_list = [cipai_pair[0] for cipai_pair in cipai_list]
+        print("Ci Pai number: "+ str(len(cipai_list)))
+        print("Most common cipai: "+ cipai_list[0])
+        return cipai_list
+
+
+    def get_lines_with_specified_cipai(self, cipai, input_file):
+        def keep_line(line,n):
+            sentences = line.split()
+            if cipai == sentences[1]:
+                return_s = str(n)+' '
+            else:
+                return_s = ''
+            return return_s
+        with codecs.open(input_file, "r", encoding=self.encoding) as f:
+            poems_list = f.read().strip().split('\n')
+        number_list= list(map(keep_line, poems_list, range(len(poems_list))))
+        number_list = ''.join(number_list)
+        number_list = [int(i) for i in number_list.split()]
+        return number_list
+
+
+
+    def preprocess(self, line_list, input_file, vocab_file, tensor_file):
         def handle_poem_with_title(line):
-            # min_song_length = 56
-            # remove label, title, and author from each line
             sentences = line.split()
             sentences = sentences[3:]
             line = ''.join(sentences)
@@ -78,7 +110,9 @@ class TextLoader():
         elif 'quansongci' in input_file:
             print('Processing Quan Song Ci dataset ..')
             with codecs.open(input_file, "r", encoding=self.encoding) as f:
-                lines = list(map(handle_songci_with_title,f.read().strip().split('\n')))
+                poems_list = f.read().strip().split('\n')
+            selected_poems_list = [poems_list[i] for i in line_list]
+            lines = list(map(handle_songci_with_title, selected_poems_list))
         else:
             with codecs.open(input_file, "r", encoding=self.encoding) as f:
                 lines = list(map(handle_poem_with_title,f.read().strip().split('\n')))
