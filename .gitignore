@@ -11,6 +11,9 @@
 *.cb
 *.cb2
 
+##
+matplotlib
+
 ## Intermediate documents:
 *.dvi
 *-converted-to.*
@@ -178,3 +181,11 @@ TSWLatexianTemp*
 
 # KBibTeX
 *~[0-9]*
+#main.pdf
+Proposal/sigkddExp.pdf
+
+#programming
+*.pyc
+
+#Mac OS 
+*.DS_Store
