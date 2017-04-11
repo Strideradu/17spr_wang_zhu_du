@@ -12,24 +12,74 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-
+import time, datetime, os, sys
 import tensorflow as tf
 
+"""
+
+The hyperparameters used in the model:
+- learning_rate - the initial value of the learning rate
+- max_grad_norm - the maximum permissible norm of the gradient
+- num_layers - the number of LSTM layers
+- songlength - the number of unrolled steps of LSTM
+- hidden_size - the number of LSTM units
+- epochs_before_decay - the number of epochs trained with the initial learning rate
+- max_epoch - the total number of epochs for training
+- keep_prob - the probability of keeping weights in the dropout layer
+- lr_decay - the decay of the learning rate for each epoch after "epochs_before_decay"
+- batch_size - the batch size
+"""
+
+flags = tf.flags
+logging = tf.logging
+
+flags.DEFINE_integer("batch_size", 20,  # 10, 20
+                     "Batch size.")
+
+flags.DEFINE_float("reg_scale", 1.0,  #
+                   "L2 regularization scale.")
+
+flags.DEFINE_integer("hidden_size_g", 350,  # 200, 1500
+                     "Hidden size for recurrent part of G.")
+flags.DEFINE_integer("hidden_size_d", 350,  # 200, 1500
+                     "Hidden size for recurrent part of D. Default: same as for G.")
+flags.DEFINE_float("keep_prob", 0.5,  # 1.0, .35
+                   "Keep probability. 1.0 disables dropout.")
+
+FLAGS = flags.FLAGS
+
+
+def data_type():
+    # return tf.float16 if FLAGS.float16 else tf.float32
+    return tf.float32
+
+def linear(inp, output_dim, scope=None, stddev=1.0, reuse_scope=False):
+    norm = tf.random_normal_initializer(stddev=stddev, dtype=data_type())
+    const = tf.constant_initializer(0.0, dtype=data_type())
+    with tf.variable_scope(scope or 'linear') as scope:
+        scope.set_regularizer(tf.contrib.layers.l2_regularizer(scale=FLAGS.reg_scale))
+        if reuse_scope:
+            scope.reuse_variables()
+        # print('inp.get_shape(): {}'.format(inp.get_shape()))
+        w = tf.get_variable('w', [inp.get_shape()[1], output_dim], initializer=norm, dtype=data_type())
+        b = tf.get_variable('b', [output_dim], initializer=const, dtype=data_type())
+    return tf.matmul(inp, w) + b
 
 class RNNGAN(object):
     """The RNNGAN model."""
 
     def __init__(self, is_training, num_song_features=None, num_meta_features=None):
         self.batch_size = batch_size = FLAGS.batch_size
-        self.songlength = songlength = FLAGS.songlength
+        #self.songlength = songlength = FLAGS.songlength
         # self.global_step            = tf.Variable(0, trainable=False)
 
-        print('songlength: {}'.format(self.songlength))
-        self._input_songdata = tf.placeholder(shape=[batch_size, songlength, num_song_features], dtype=data_type())
-        self._input_metadata = tf.placeholder(shape=[batch_size, num_meta_features], dtype=data_type())
+        #print('songlength: {}'.format(self.songlength))
+        #self._input_songdata = tf.placeholder(shape=[batch_size, songlength, num_song_features], dtype=data_type())
+        #self._input_metadata = tf.placeholder(shape=[batch_size, num_meta_features], dtype=data_type())
+        self._input_data = tf.placeholder(tf.int32, [FLAGS.batch_size, None])
 
         songdata_inputs = [tf.squeeze(input_, [1])
-                           for input_ in tf.split(1, songlength, self._input_songdata)]
+                           for input_ in tf.split(1, None, self._input_data)]
 
         with tf.variable_scope('G') as scope:
             scope.set_regularizer(tf.contrib.layers.l2_regularizer(scale=FLAGS.reg_scale))
@@ -39,9 +89,10 @@ class RNNGAN(object):
                     lstm_cell, output_keep_prob=FLAGS.keep_prob)
             cell = tf.nn.rnn_cell.MultiRNNCell([lstm_cell] * FLAGS.num_layers_g, state_is_tuple=True)
 
-            self._initial_state = cell.zero_state(batch_size, data_type())
+            self._initial_state = cell.zero_state(batch_size, tf.float32)
 
             # TODO: (possibly temporarily) disabling meta info
+            """
             if FLAGS.generate_meta:
                 metainputs = tf.random_uniform(shape=[batch_size, int(FLAGS.random_input_scale * num_meta_features)],
                                                minval=0.0, maxval=1.0)
@@ -50,14 +101,14 @@ class RNNGAN(object):
                 meta_softmax_b = tf.get_variable("meta_softmax_b", [num_meta_features])
                 meta_logits = tf.nn.xw_plus_b(meta_g, meta_softmax_w, meta_softmax_b)
                 meta_probs = tf.nn.softmax(meta_logits)
-
+            """
             random_rnninputs = tf.random_uniform(
-                shape=[batch_size, songlength, int(FLAGS.random_input_scale * num_song_features)], minval=0.0,
+                shape=[batch_size, None, int(FLAGS.random_input_scale * num_song_features)], minval=0.0,
                 maxval=1.0, dtype=data_type())
-
+            
             # Make list of tensors. One per step in recurrence.
             # Each tensor is batchsize*numfeatures.
-            random_rnninputs = [tf.squeeze(input_, [1]) for input_ in tf.split(1, songlength, random_rnninputs)]
+            random_rnninputs = [tf.squeeze(input_, [1]) for input_ in tf.split(1, None, random_rnninputs)]
 
             # REAL GENERATOR:
             state = self._initial_state
@@ -71,8 +122,11 @@ class RNNGAN(object):
                 concat_values = [input_]
                 if not FLAGS.disable_feed_previous:
                     concat_values.append(generated_point)
+                """
                 if FLAGS.generate_meta:
                     concat_values.append(meta_probs)
+                """
+
                 if len(concat_values):
                     input_ = tf.concat(concat_dim=1, values=concat_values)
                 input_ = tf.nn.relu(linear(input_, FLAGS.hidden_size_g,
@@ -94,8 +148,11 @@ class RNNGAN(object):
                 concat_values = [input_]
                 if not FLAGS.disable_feed_previous:
                     concat_values.append(prev_target)
+
+                """
                 if FLAGS.generate_meta:
                     concat_values.append(self._input_metadata)
+                """
                 if len(concat_values):
                     input_ = tf.concat(concat_dim=1, values=concat_values)
                 input_ = tf.nn.relu(linear(input_, FLAGS.hidden_size_g, scope='input_layer', reuse_scope=(i != 0)))
@@ -131,7 +188,7 @@ class RNNGAN(object):
         # ---BEGIN, PRETRAINING. ---
 
         print(tf.transpose(tf.pack(self._generated_features_pretraining), perm=[1, 0, 2]).get_shape())
-        print(self._input_songdata.get_shape())
+        print(self._input_data.get_shape())
         self.rnn_pretraining_loss = tf.reduce_mean(
             tf.squared_difference(x=tf.transpose(tf.pack(self._generated_features_pretraining), perm=[1, 0, 2]),
                                   y=self._input_songdata))
