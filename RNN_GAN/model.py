@@ -28,6 +28,10 @@ flags.DEFINE_integer("num_layers", 4,
                    "size of RNN hidden state")
 flags.DEFINE_integer("rnn_size", 256,
                    "size of RNN hidden state")
+flags.DEFINE_integer("hide_size_G", 512,
+                   "size of generator hidden state")
+flags.DEFINE_integer("hide_size_D", 512,
+                   "size of discriminator hidden state")
 flags.DEFINE_integer("batch_size", 64,
                    "minibatch size")
 flags.DEFINE_integer("input_noise_size", 64,
@@ -58,6 +62,7 @@ class GAN():
 
         #with tf.device("/cpu:0"):
         embedding = tf.get_variable("embedding", [FLAGS.vocab_size, FLAGS.rnn_size])
+        self.embedding = embedding
         # in lstm-gnn inputs = input senstence
         inputs = tf.nn.embedding_lookup(embedding, self.input_data)
 
@@ -74,40 +79,40 @@ class GAN():
         with tf.variable_scope('generator_model', reuse=reuse):
             input_noise_w = tf.get_variable(
                 "input_noise_w",
-                [input_noise_size, hidden_size_gen],
-                initializer=tf.random_normal_initializer(0, stddev=1 / np.sqrt(vocab_size))
+                [FLAGS.input_noise_size, FLAGS.hide_size_G],
+                initializer=tf.random_normal_initializer(0, stddev=1 / np.sqrt(FLAGS.vocab_size))
             )
             input_noise_b = tf.get_variable(
                 "input_noise_b",
-                [hidden_size_gen],
+                [FLAGS.hide_size_G],
                 initializer=tf.constant_initializer(1e-4)
             )
 
             first_hidden_state = tf.nn.relu(tf.matmul(input_, input_noise_w) + input_noise_b)
 
-            cell = tf.nn.rnn_cell.GRUCell(hidden_size_gen)
+            cell = tf.nn.rnn_cell.GRUCell(FLAGS.hide_size_G)
             if is_train:
-                cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
+                cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=FLAGS.dropout)
 
             input_w = tf.get_variable(
                 "input_w",
-                [vocab_size, hidden_size_gen],
-                initializer=tf.random_normal_initializer(0, stddev=1 / np.sqrt(vocab_size))
+                [FLAGS.vocab_size,FLAGS.hide_size_G],
+                initializer=tf.random_normal_initializer(0, stddev=1 / np.sqrt(FLAGS.vocab_size))
             )
             input_b = tf.get_variable(
                 "input_b",
-                [hidden_size_gen],
+                [FLAGS.hide_size_G],
                 initializer=tf.constant_initializer(1e-4)
             )
 
             softmax_w = tf.get_variable(
                 "softmax_w",
-                [hidden_size_gen, vocab_size],
-                initializer=tf.random_normal_initializer(0, stddev=1 / np.sqrt(hidden_size_gen))
+                [FLAGS.hide_size_G, FLAGS.vocab_size],
+                initializer=tf.random_normal_initializer(0, stddev=1 / np.sqrt(FLAGS.hide_size_G))
             )
             softmax_b = tf.get_variable(
                 "softmax_b",
-                [vocab_size],
+                [FLAGS.vocab_size],
                 initializer=tf.constant_initializer(1e-4)
             )
 
@@ -133,4 +138,49 @@ class GAN():
 
         return output, variables
 
+    def build_discriminator(self, input_, is_train = False, reuse = False):
 
+
+        with tf.variable_scope('discriminator_model', reuse = reuse):
+            cell = tf.nn.rnn_cell.GRUCell(FLAGS.hidden_size_D)
+            if is_train:
+                cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
+
+            if is_train:
+                input_ = tf.nn.dropout(input_, FLAGS.dropout)
+
+            state = cell.zero_state(FLAGS.batch_size, tf.float32)
+
+            input_w = tf.get_variable(
+                "input_w",
+                [vocab_size, FLAGS.hidden_size_D],
+                initializer=tf.random_normal_initializer(0, stddev=1/np.sqrt(vocab_size))
+            )
+            input_b = tf.get_variable(
+                "input_b",
+                [FLAGS.hidden_size_D],
+                initializer=tf.constant_initializer(1e-4)
+            )
+
+            with tf.variable_scope("GRU_discriminator"):
+                for time_step in range(seq_size):
+                    if time_step > 0: tf.get_variable_scope().reuse_variables()
+                    inp = tf.nn.relu(tf.matmul(input_[:, time_step, :], input_w) + input_b)
+                    cell_output, state = cell(inp, state)
+
+            out_w = tf.get_variable(
+                "discriminator_output_w",
+                [FLAGS.hidden_size_D, 1],
+                initializer=tf.random_normal_initializer(0, 1./np.sqrt(FLAGS.hidden_size_D))
+            )
+            out_b = tf.get_variable(
+                "discriminator_output_b",
+                [1],
+                initializer=tf.constant_initializer(1e-4)
+            )
+
+            output = tf.reduce_mean(tf.sigmoid(tf.matmul(cell_output, out_w) + out_b))
+
+        variables = [v for v in tf.all_variables() if 'discriminator_model' in v.name]
+
+        return output, variables
