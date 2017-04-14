@@ -42,7 +42,8 @@ flags.DEFINE_float("dropout", 0.5,
 FLAGS = flags.FLAGS
 
 class GAN():
-    def __init__(self, is_train = True):
+    def __init__(self, first_input, is_train = True):
+        self.first_input = first_input
 
         cell = rnn.BasicLSTMCell(FLAGS.rnn_size, state_is_tuple=False)
         if is_train:
@@ -55,15 +56,81 @@ class GAN():
         self.targets = tf.placeholder(tf.int32, [FLAGS.batch_size, None])
         self.initial_state = cell.zero_state(FLAGS.batch_size, tf.float32)
 
-        with tf.device("/cpu:0"):
-            embedding = tf.get_variable("embedding", [FLAGS.vocab_size, FLAGS.rnn_size])
-            # in lstm-gnn inputs = input senstence
-            inputs = tf.nn.embedding_lookup(embedding, self.input_data)
+        #with tf.device("/cpu:0"):
+        embedding = tf.get_variable("embedding", [FLAGS.vocab_size, FLAGS.rnn_size])
+        # in lstm-gnn inputs = input senstence
+        inputs = tf.nn.embedding_lookup(embedding, self.input_data)
 
         input_noise = tf.placeholder(tf.float32, [FLAGS.batch_size, FLAGS.input_noise_size])
         input_noise_one_sent = tf.placeholder(tf.float32, [1, FLAGS.input_noise_size])
         self.input_noise = input_noise
         self.input_noise_one_sent = input_noise_one_sent
 
+        _, gen_vars = self.build_generator(input_noise, is_train=True)
+
+    def build_generator(self, input_, reuse=False, is_train=False):
+        embedding, first_input = self.embedding, self.first_input
+
+        with tf.variable_scope('generator_model', reuse=reuse):
+            input_noise_w = tf.get_variable(
+                "input_noise_w",
+                [input_noise_size, hidden_size_gen],
+                initializer=tf.random_normal_initializer(0, stddev=1 / np.sqrt(vocab_size))
+            )
+            input_noise_b = tf.get_variable(
+                "input_noise_b",
+                [hidden_size_gen],
+                initializer=tf.constant_initializer(1e-4)
+            )
+
+            first_hidden_state = tf.nn.relu(tf.matmul(input_, input_noise_w) + input_noise_b)
+
+            cell = tf.nn.rnn_cell.GRUCell(hidden_size_gen)
+            if is_train:
+                cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
+
+            input_w = tf.get_variable(
+                "input_w",
+                [vocab_size, hidden_size_gen],
+                initializer=tf.random_normal_initializer(0, stddev=1 / np.sqrt(vocab_size))
+            )
+            input_b = tf.get_variable(
+                "input_b",
+                [hidden_size_gen],
+                initializer=tf.constant_initializer(1e-4)
+            )
+
+            softmax_w = tf.get_variable(
+                "softmax_w",
+                [hidden_size_gen, vocab_size],
+                initializer=tf.random_normal_initializer(0, stddev=1 / np.sqrt(hidden_size_gen))
+            )
+            softmax_b = tf.get_variable(
+                "softmax_b",
+                [vocab_size],
+                initializer=tf.constant_initializer(1e-4)
+            )
+
+            state = first_hidden_state
+
+            labels = tf.fill([tf.shape(input_)[0], 1], tf.cast(first_input, tf.int32))
+            input_ = tf.nn.embedding_lookup(embedding, labels)
+
+            outputs = []
+            with tf.variable_scope("GRU_generator"):
+                for time_step in range(seq_size):
+                    if time_step > 0: tf.get_variable_scope().reuse_variables()
+                    inp = tf.nn.relu(tf.matmul(input_[:, 0, :], input_w) + input_b)
+
+                    cell_output, state = cell(inp, state)
+                    logits = tf.nn.softmax(tf.matmul(cell_output, softmax_w) + softmax_b)
+                    labels = tf.expand_dims(tf.argmax(logits, 1), 1)
+                    input_ = tf.nn.embedding_lookup(embedding, labels)
+                    outputs.append(tf.expand_dims(logits, 1))
+
+            output = tf.concat(1, outputs)
+        variables = [v for v in tf.all_variables() if 'generator_model' in v.name]
+
+        return output, variables
 
 
