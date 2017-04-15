@@ -25,7 +25,7 @@ flags = tf.flags
 logging = tf.logging
 
 flags.DEFINE_integer("num_layers", 4,
-                   "size of RNN hidden state")
+                   "number of layers")
 flags.DEFINE_integer("rnn_size", 256,
                    "size of RNN hidden state")
 flags.DEFINE_integer("seq_size", 256,
@@ -47,7 +47,7 @@ flags.DEFINE_float("dropout", 0.5,
 flags.DEFINE_float("learning_rate", 1e-4,
                    "learning rate")
 flags.DEFINE_float("gradient_cap", 1.0,
-                   "max of absolute value of clipping")
+                   "max of absolute value of clipping, to avoid gradient cliff case")
 
 FLAGS = flags.FLAGS
 
@@ -71,6 +71,7 @@ class GAN():
         self.embedding = embedding
         # in lstm-gnn inputs = input senstence
         inputs = tf.nn.embedding_lookup(embedding, self.input_data)
+        # self.real_sent = self.input_data
 
         input_noise = tf.placeholder(tf.float32, [FLAGS.batch_size, FLAGS.input_noise_size])
         input_noise_one_sent = tf.placeholder(tf.float32, [1, FLAGS.input_noise_size])
@@ -93,6 +94,23 @@ class GAN():
 
         self.gen_cost = 1. - desc_decision_fake
         self.disc_cost = 1. - disc_decision_real*(1. - desc_decision_fake)
+
+        optimizer_disc = tf.train.AdamOptimizer(FLAGS.learning_rate)
+        gvs = optimizer_disc.compute_gradients(self.disc_cost, self.disc_vars)
+        # Gradient Clipping
+        capped_grads_and_vars = [(tf.clip_by_value(grad, -FLAGS.gradient_cap, FLAGS.gradient_cap), var) \
+                                 for grad, var in gvs]
+        optimizer_disc.apply_gradients(capped_grads_and_vars)
+
+        optimizer_gen = tf.train.AdamOptimizer(FLAGS.learning_rate)
+        gvs = optimizer_gen.compute_gradients(self.gen_cost, self.gen_vars)
+        # Gradient Clipping
+        capped_grads_and_vars = [(tf.clip_by_value(grad, -FLAGS.gradient_cap, FLAGS.gradient_cap), var) \
+                                 for grad, var in gvs]
+        optimizer_gen.apply_gradients(capped_grads_and_vars)
+
+        self.disc_train = optimizer_disc.minimize(self.disc_cost)
+        self.gen_train = optimizer_gen.minimize(self.gen_cost)
 
     def build_generator(self, input_, reuse=False, is_train=False):
         embedding, first_input = self.embedding, self.first_input
@@ -206,20 +224,32 @@ class GAN():
 
         return output, variables
 
-    def build_trainers(self):
-        optimizer_disc = tf.train.AdamOptimizer(FLAGS.learning_rate)
-        gvs = optimizer_disc.compute_gradients(self.disc_cost, self.disc_vars)
-        # Gradient Clipping
-        capped_grads_and_vars = [(tf.clip_by_value(grad, -FLAGS.gradient_cap, FLAGS.gradient_cap), var) \
-                                 for grad, var in gvs]
-        optimizer_disc.apply_gradients(capped_grads_and_vars)
 
-        optimizer_gen = tf.train.AdamOptimizer(FLAGS.learning_rate)
-        gvs = optimizer_gen.compute_gradients(self.gen_cost, self.gen_vars)
-        # Gradient Clipping
-        capped_grads_and_vars = [(tf.clip_by_value(grad, -FLAGS.gradient_cap, FLAGS.gradient_cap), var) \
-                                 for grad, var in gvs]
-        optimizer_gen.apply_gradients(capped_grads_and_vars)
 
-        self.disc_train = optimizer_disc.minimize(self.disc_cost)
-        self.gen_train = optimizer_gen.minimize(self.gen_cost)
+    def train_gen_on_batch(self, session, batch):
+        """Train generator on given `batch` in current `session`"""
+        feed = {
+            self.input_noise: batch
+        }
+        ret_values = [self.gen_cost, self.gen_train]
+        cost, _ = session.run(ret_values, feed_dict=feed)
+        return cost
+
+    def train_disc_on_batch(self, session, noise_batch, real_batch):
+        """Train discriminator on given `noise_batch` and `real_batch`
+        in current `session`
+        """
+        feed = {
+            self.input_noise: noise_batch,
+            self.input_data: real_batch
+        }
+        ret_values = [self.disc_cost, self.disc_train]
+        cost, _ = session.run(ret_values, feed_dict=feed)
+        return cost
+
+    def generate_sent(self, session, noise):
+        """Generate one sentence in current `session` with given `noise`"""
+        feed_dict = {self.input_noise_one_sent: [noise]}
+        generated = session.run(self.sent_generator, feed_dict=feed_dict)
+        return np.argmax(generated[0], axis=1)
+
