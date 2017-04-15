@@ -28,6 +28,8 @@ flags.DEFINE_integer("num_layers", 4,
                    "size of RNN hidden state")
 flags.DEFINE_integer("rnn_size", 256,
                    "size of RNN hidden state")
+flags.DEFINE_integer("seq_size", 256,
+                   "max size of sequence")
 flags.DEFINE_integer("hide_size_G", 512,
                    "size of generator hidden state")
 flags.DEFINE_integer("hide_size_D", 512,
@@ -42,6 +44,10 @@ flags.DEFINE_integer("batch_size", 64,
                    "minibatch size")
 flags.DEFINE_float("dropout", 0.5,
                    "rate of dropout")
+flags.DEFINE_float("learning_rate", 1e-4,
+                   "learning rate")
+flags.DEFINE_float("gradient_cap", 1.0,
+                   "max of absolute value of clipping")
 
 FLAGS = flags.FLAGS
 
@@ -55,9 +61,9 @@ class GAN():
         self.cell = cell = rnn.MultiRNNCell([cell] * FLAGS.num_layers, state_is_tuple=False)
 
         # input size is unknown
-        self.input_data = tf.placeholder(tf.int32, [FLAGS.batch_size, None])
+        self.input_data = tf.placeholder(tf.int32, [FLAGS.batch_size, FLAGS.seq_size])
 
-        self.targets = tf.placeholder(tf.int32, [FLAGS.batch_size, None])
+        self.targets = tf.placeholder(tf.int32, [FLAGS.batch_size, FLAGS.seq_size])
         self.initial_state = cell.zero_state(FLAGS.batch_size, tf.float32)
 
         #with tf.device("/cpu:0"):
@@ -71,7 +77,22 @@ class GAN():
         self.input_noise = input_noise
         self.input_noise_one_sent = input_noise_one_sent
 
-        _, gen_vars = self.build_generator(input_noise, is_train=True)
+        _, gen_vars = self.build_generator(input_noise, is_train = True)
+        generated_sent, _ = self.build_generator(input_noise, reuse = True)
+        sent_generator, _ = self.build_generator(input_noise_one_sent, reuse = True)
+        self.gen_vars = gen_vars
+        self.generated_sent = generated_sent
+        self.sent_generator = sent_generator
+
+        _, disc_vars = self.build_discriminator(inputs, is_train = True)
+        desc_decision_fake, _ = self.build_discriminator(generated_sent, reuse = True)
+        disc_decision_real, _ = self.build_discriminator(inputs, reuse = True)
+        self.disc_vars = disc_vars
+        self.desc_decision_fake = desc_decision_fake
+        self.disc_decision_real = disc_decision_real
+
+        self.gen_cost = 1. - desc_decision_fake
+        self.disc_cost = 1. - disc_decision_real*(1. - desc_decision_fake)
 
     def build_generator(self, input_, reuse=False, is_train=False):
         embedding, first_input = self.embedding, self.first_input
@@ -123,7 +144,7 @@ class GAN():
 
             outputs = []
             with tf.variable_scope("GRU_generator"):
-                for time_step in range(seq_size):
+                for time_step in range(FLAGS.seq_size):
                     if time_step > 0: tf.get_variable_scope().reuse_variables()
                     inp = tf.nn.relu(tf.matmul(input_[:, 0, :], input_w) + input_b)
 
@@ -144,7 +165,7 @@ class GAN():
         with tf.variable_scope('discriminator_model', reuse = reuse):
             cell = tf.nn.rnn_cell.GRUCell(FLAGS.hidden_size_D)
             if is_train:
-                cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=keep_prob)
+                cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=FLAGS.dropout)
 
             if is_train:
                 input_ = tf.nn.dropout(input_, FLAGS.dropout)
@@ -153,8 +174,8 @@ class GAN():
 
             input_w = tf.get_variable(
                 "input_w",
-                [vocab_size, FLAGS.hidden_size_D],
-                initializer=tf.random_normal_initializer(0, stddev=1/np.sqrt(vocab_size))
+                [FLAGS.vocab_size, FLAGS.hidden_size_D],
+                initializer=tf.random_normal_initializer(0, stddev=1/np.sqrt(FLAGS.vocab_size))
             )
             input_b = tf.get_variable(
                 "input_b",
@@ -163,7 +184,7 @@ class GAN():
             )
 
             with tf.variable_scope("GRU_discriminator"):
-                for time_step in range(seq_size):
+                for time_step in range(FLAGS.seq_size):
                     if time_step > 0: tf.get_variable_scope().reuse_variables()
                     inp = tf.nn.relu(tf.matmul(input_[:, time_step, :], input_w) + input_b)
                     cell_output, state = cell(inp, state)
@@ -184,3 +205,21 @@ class GAN():
         variables = [v for v in tf.all_variables() if 'discriminator_model' in v.name]
 
         return output, variables
+
+    def build_trainers(self):
+        optimizer_disc = tf.train.AdamOptimizer(FLAGS.learning_rate)
+        gvs = optimizer_disc.compute_gradients(self.disc_cost, self.disc_vars)
+        # Gradient Clipping
+        capped_grads_and_vars = [(tf.clip_by_value(grad, -FLAGS.gradient_cap, FLAGS.gradient_cap), var) \
+                                 for grad, var in gvs]
+        optimizer_disc.apply_gradients(capped_grads_and_vars)
+
+        optimizer_gen = tf.train.AdamOptimizer(FLAGS.learning_rate)
+        gvs = optimizer_gen.compute_gradients(self.gen_cost, self.gen_vars)
+        # Gradient Clipping
+        capped_grads_and_vars = [(tf.clip_by_value(grad, -FLAGS.gradient_cap, FLAGS.gradient_cap), var) \
+                                 for grad, var in gvs]
+        optimizer_gen.apply_gradients(capped_grads_and_vars)
+
+        self.disc_train = optimizer_disc.minimize(self.disc_cost)
+        self.gen_train = optimizer_gen.minimize(self.gen_cost)
