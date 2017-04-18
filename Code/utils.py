@@ -30,6 +30,7 @@ class TextLoader():
         tensor_file = os.path.join(data_dir, "data.npy")
 
         self.cipai_list = self.get_cipai_list(input_file)
+
         line_list = self.get_lines_with_specified_cipai(input_file)
 
 
@@ -47,6 +48,26 @@ class TextLoader():
 
         self.create_batches()
         self.reset_batch_pointer()
+
+
+    def get_cipai_rules(self, line_list):
+        # extract length
+        l_list = line_list[:10]
+        l_list =
+        print(l_list)
+        n_list = [len(i) for i in l_list]
+        n = int(round( sum(n_list)/len(n_list) ))
+
+
+        # extract index for "，" and "。"
+        punc1_list = []
+        punc2_list = []
+        punc1_list = [i for i, j in enumerate(l[0]) if j == '，']
+        punc2_list = [i for i, j in enumerate(l[0]) if j == '。']
+
+        return (n, punc1_list, punc2_list)
+
+
 
 
     def get_cipai_list(self,input_file):
@@ -118,6 +139,7 @@ class TextLoader():
 
         print("Number of Selected Song Ci:" + str(len(lines)))
 
+        #(self.n, self.punc1_list, self.punc2_list) = self.get_cipai_rules(line_list)
 
         # counter: similar to a dictionary {word:occurence count} --By Judy
         counter = collections.Counter(reduce(lambda data,line: line+data,lines,''))
