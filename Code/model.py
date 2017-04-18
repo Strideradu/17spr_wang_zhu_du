@@ -21,13 +21,13 @@ class Model():
             raise Exception("model type not supported: {}".format(args.model))
 
 
-        dropout = args.dropout
         cell = cell_fn(args.rnn_size,state_is_tuple=False)
 
 
         #####   Add dropout ######
         if not infer:
             # training case
+            dropout = args.dropout
             cell_dropout = tf.contrib.rnn.DropoutWrapper(cell,input_keep_prob=dropout, output_keep_prob=dropout)
             self.cell = cell = rnn.MultiRNNCell([cell_dropout] * args.num_layers,state_is_tuple=False)
         else:
