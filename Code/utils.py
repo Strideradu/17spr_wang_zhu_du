@@ -10,7 +10,7 @@ import numpy as np
 BEGIN_CHAR = '^'
 END_CHAR = '$'
 UNKNOWN_CHAR = '*'
-MAX_VOCAB_SIZE = 300
+MAX_VOCAB_SIZE =500
 MAX_TANG_LENGTH = 100
 MIN_SONG_LENGTH = 56
 
@@ -108,8 +108,8 @@ class TextLoader():
             sentences = sentences[3:]
             line = ''.join(sentences)
             line = line.replace(' ','')
-            if len(line) <= MIN_SONG_LENGTH:
-                line = ''
+            #if len(line) <= MIN_SONG_LENGTH:
+            #    line = ''
             return BEGIN_CHAR+line+END_CHAR
 
         if 'quansongci' in input_file:
