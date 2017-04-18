@@ -21,7 +21,6 @@ class Model():
             raise Exception("model type not supported: {}".format(args.model))
 
 
-        dropout = args.dropout
         cell = cell_fn(args.rnn_size,state_is_tuple=False)
         self.cell = cell = rnn.MultiRNNCell([cell] * args.num_layers,state_is_tuple=False)
 
