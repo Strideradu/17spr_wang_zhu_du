@@ -35,6 +35,8 @@ def main():
                        help='learning rate')
     parser.add_argument('--decay_rate', type=float, default=0.97,
                        help='decay rate for rmsprop')
+    parser.add_argument('--dropout', type=float, default=0.8,
+                        help='keep out rate for rnn')
     parser.add_argument('--init_from', type=str, default=None,
                        help="""continue training from saved model at this path. Path must contain files saved by previous training process:
                             'config.pkl'        : configuration;
@@ -103,8 +105,11 @@ def train(args):
                 iterations += 1
                 start = time.time()
                 x, y = data_loader.next_batch()
-                feed = {model.input_data: x, model.targets: y}
-                train_loss, _ , _ = sess.run([model.cost, model.final_state, model.train_op], feed)
+                feed = {model.input_data: x,
+                        model.targets: y}
+                train_loss, _ , _ = sess.run(
+                    [model.cost, model.final_state, model.train_op],
+                    feed)
                 end = time.time()
                 sys.stdout.write('\r')
                 info = "{}/{} (epoch {}), train_loss = {:.3f}, time/batch = {:.3f}" \
