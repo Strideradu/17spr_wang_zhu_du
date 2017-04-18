@@ -35,7 +35,7 @@ def main():
                        help='learning rate')
     parser.add_argument('--decay_rate', type=float, default=0.97,
                        help='decay rate for rmsprop')
-    parser.add_argument('--dropout', type=float, default=0.8,
+    parser.add_argument('--dropout', type=float, default=1,
                         help='keep out rate for rnn')
     parser.add_argument('--init_from', type=str, default=None,
                        help="""continue training from saved model at this path. Path must contain files saved by previous training process:
