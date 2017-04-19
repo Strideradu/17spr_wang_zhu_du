@@ -31,7 +31,7 @@ class TextLoader():
 
         self.cipai_list = self.get_cipai_list(input_file)
 
-        line_list = self.get_lines_with_specified_cipai(input_file)
+        line_list, self.cipai_rules = self.get_lines_with_specified_cipai(input_file)
 
 
         ######################################
@@ -50,22 +50,6 @@ class TextLoader():
         self.reset_batch_pointer()
 
 
-    def get_cipai_rules(self, line_list):
-        # extract length
-        l_list = line_list[:10]
-        l_list =
-        print(l_list)
-        n_list = [len(i) for i in l_list]
-        n = int(round( sum(n_list)/len(n_list) ))
-
-
-        # extract index for "，" and "。"
-        punc1_list = []
-        punc2_list = []
-        punc1_list = [i for i, j in enumerate(l[0]) if j == '，']
-        punc2_list = [i for i, j in enumerate(l[0]) if j == '。']
-
-        return (n, punc1_list, punc2_list)
 
 
 
@@ -83,11 +67,17 @@ class TextLoader():
         cipai_list = [cipai_pair[0] for cipai_pair in cipai_list]
         print("Ci Pai number: "+ str(len(cipai_list)))
         print("Most common cipai: "+ cipai_list[0])
+
         return cipai_list
 
 
+
     def get_lines_with_specified_cipai(self, input_file, selected_cipai_index=0):
+
+
+        #huan xi sha is the default cipai
         selected_cipai = self.cipai_list[selected_cipai_index]
+
         def keep_line(line,n,selected_cipai):
             sentences = line.split()
             if selected_cipai == sentences[1]:
@@ -95,13 +85,43 @@ class TextLoader():
             else:
                 return_s = ''
             return return_s
+
         with codecs.open(input_file, "r", encoding=self.encoding) as f:
             poems_list = f.read().strip().split('\n')
-        cipai = [selected_cipai for i in range(len(poems_list))]
-        number_list= list(map(keep_line, poems_list, range(len(poems_list)),cipai))
+
+        tmp_cipai = [selected_cipai for i in range(len(poems_list))]
+
+        number_list= list(map(keep_line, poems_list, range(len(poems_list)),tmp_cipai))
         number_list = ''.join(number_list)
         number_list = [int(i) for i in number_list.split()]
-        return number_list
+
+
+        #### Extracting rules
+        with codecs.open(input_file, "r", encoding=self.encoding) as f:
+            while True:
+                sentece = f.readline().strip().split()
+                if sentece[1] == selected_cipai:
+                        sentece = sentece[3]
+                        break
+        print("selecting template:")
+        print(sentece)
+
+        def extract_rule(sentece):
+            #punc_list = ["，","。","！","？","、"]
+            punc_list = ['\xef\xbc\x8c',
+                         '\xe3\x80\x82',
+                         '\xef\xbc\x81',
+                         '\xef\xbc\x9f',
+                         '\xe3\x80\x81'
+                         ]
+            punc_list= [item.decode("utf-8") for item in punc_list]
+            #print(type(punc_list[0]))
+            rule_list = [j if j in punc_list else -1 for i,j in enumerate(sentece)]
+            return rule_list, punc_list
+
+        rule_list, punc_list = extract_rule(sentece)
+        cipai_rule = (selected_cipai, rule_list, punc_list)
+        return number_list, cipai_rule
 
 
 
@@ -139,7 +159,6 @@ class TextLoader():
 
         print("Number of Selected Song Ci:" + str(len(lines)))
 
-        #(self.n, self.punc1_list, self.punc2_list) = self.get_cipai_rules(line_list)
 
         # counter: similar to a dictionary {word:occurence count} --By Judy
         counter = collections.Counter(reduce(lambda data,line: line+data,lines,''))

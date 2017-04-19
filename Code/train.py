@@ -53,12 +53,14 @@ def main():
 
 def train(args):
     data_loader = TextLoader(args.batch_size)
+    print(data_loader.cipai_rules)
+
     print('finish readling file ...\n')
+
     args.vocab_size = data_loader.vocab_size
-    args.char_n_per_sentence = data_loader.n
-    args.punc1_list = data_loader.punc1_list
-    args.punc2_list = data_loader.punc2_list
+    args.cipai_rules = len(data_loader.cipai_rules)
     print("Capture Rules Suceessfully")
+
 
     # check compatibility if training is continued from previously saved model
     if args.init_from is not None:

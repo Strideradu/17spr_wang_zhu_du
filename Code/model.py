@@ -25,7 +25,8 @@ class Model():
         self.cell = cell = rnn.MultiRNNCell([cell] * args.num_layers,state_is_tuple=False)
 
 
-        ######   Add dropout ######
+        ######   Add dropout: uncoment this block of code when you need ######
+        #
         #if not infer:
         #    # training case
         #    cell_dropout = tf.contrib.rnn.DropoutWrapper(cell,input_keep_prob=dropout, output_keep_prob=dropout)
@@ -33,7 +34,8 @@ class Model():
         #else:
         #    # testing case
         #    self.cell = cell = rnn.MultiRNNCell([cell] * args.num_layers,state_is_tuple=False)
-        ######   Add dropout ######
+        #
+        ######   Add dropout: uncoment this block of code when you need ######
 
 
         self.input_data = tf.placeholder(tf.int32, [args.batch_size, None])
@@ -48,7 +50,10 @@ class Model():
                 embedding = tf.get_variable("embedding", [args.vocab_size, args.rnn_size])
                 inputs = tf.nn.embedding_lookup(embedding, self.input_data)
 
-        outputs, last_state = tf.nn.dynamic_rnn(cell,inputs,initial_state=self.initial_state,scope='rnnlm')
+        outputs, last_state = tf.nn.dynamic_rnn(cell,
+                                                inputs,
+                                                initial_state=self.initial_state,
+                                                scope='rnnlm')
         output = tf.reshape(outputs,[-1, args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
         self.probs = tf.nn.softmax(self.logits)
@@ -66,7 +71,7 @@ class Model():
         optimizer = tf.train.AdamOptimizer(self.lr)
         self.train_op = optimizer.apply_gradients(zip(grads, tvars))
 
-    def sample(self, sess, chars, vocab, prime=u'', sampling_type=1):
+    def sample(self, sess, chars, vocab, prime=u'', sampling_type=1, cipai_rules=None):
 
         def pick_char(weights):
             if sampling_type == 0:
@@ -76,6 +81,9 @@ class Model():
                 s = np.sum(weights)
                 sample = int(np.searchsorted(t, np.random.rand(1)*s))
             return chars[sample]
+
+        # prime is a list of chinese characters that you want it to show up in
+        # the begining of every sentence in your poem
         for char in prime:
             if char not in vocab:
                 return u"{} is not in charset!".format(char)
@@ -85,15 +93,63 @@ class Model():
             prime = u'^'
             result = u''
             x = np.array([list(map(vocab.get,prime))])
-            [probs,state] = sess.run([self.probs,self.final_state],{self.input_data: x,self.initial_state: state})
-            char = pick_char(probs[-1])
-            while char != u'$':
+
+            ## generateing the first character
+            #[probs,state] = sess.run([self.probs,self.final_state],
+            #                         {self.input_data: x,
+            #                          self.initial_state: state})
+            #char = pick_char(probs[-1])
+            ## ##############################
+
+            selected_cipai = cipai_rules[0]
+            rule_list = cipai_rules[1]
+            punc_list = cipai_rules[2]
+            c_char = u''
+
+            def valid_char(punc_list,rule_list,c_char,index):
+                if c_char not in punc_list and rule_list[index] not in punc_list:
+                    return True
+                if c_char in punc_list and rule_list[index] in punc_list:
+                    return True
+                return False
+
+            for i,c in enumerate(rule_list):
+                if c in punc_list:
+                    c_char = c
+                    result += c_char
+                    continue
+
+                iter_count = 0
+                while True:
+                    [probs,state] = sess.run([self.probs,self.final_state],
+                                             {self.input_data: x,
+                                              self.initial_state: state})
+                    c_char = pick_char(probs[-1])
+                    if valid_char(punc_list, rule_list, c_char, i):
+                        break
+                    else:
+                        print("Invalid, try again ...")
+
+                    iter_count += 1
+                    if iter_count > 100:
+                        break
+
                 result += char
-                x = np.zeros((1,1))
-                x[0,0] = vocab[char]
-                [probs,state] = sess.run([self.probs,self.final_state],{self.input_data: x,self.initial_state: state})
-                char = pick_char(probs[-1])
+                if char == u'$':
+                    break
             return result
+
+
+            #while char != u'$':
+            #    result += char
+            #    x = np.zeros((1,1))
+            #    x[0,0] = vocab[char]
+            #    [probs,state] = sess.run([self.probs,
+            #                              self.final_state],
+            #                             {self.input_data: x,
+            #                              self.initial_state: state})
+            #    char = pick_char(probs[-1])
+            #return result
         else:
             result = u'^'
             for prime_char in prime:
