@@ -7,7 +7,8 @@ import argparse
 import os
 from six.moves import cPickle
 
-from model import Model, RuleExtractor
+from model import Model
+from utils import RuleExtractor
 
 
 def main():
@@ -30,7 +31,8 @@ def sample(args):
     with open(os.path.join(args.save_dir, 'chars_vocab.pkl'), 'rb') as f:
         chars, vocab = cPickle.load(f)
     model = Model(saved_args, True)
-    args.cipai_rules = RuleExtractor(args.cipai)
+    rule_extractor = RuleExtractor(args.cipai)
+    args.cipai_rules = rule_extractor.cipai_rules 
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
         saver = tf.train.Saver(tf.global_variables())
