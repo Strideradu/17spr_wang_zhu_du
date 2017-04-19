@@ -100,7 +100,7 @@ class Model():
             #                          self.initial_state: state})
             #char = pick_char(probs[-1])
             ## ##############################
-
+            print(cipai_rules)
             selected_cipai = cipai_rules[0]
             rule_list = cipai_rules[1]
             punc_list = cipai_rules[2]
@@ -134,8 +134,8 @@ class Model():
                     if iter_count > 100:
                         break
 
-                result += char
-                if char == u'$':
+                result += c_char
+                if c_char == u'$':
                     break
             return result
 

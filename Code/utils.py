@@ -107,14 +107,17 @@ class TextLoader():
         print(sentece)
 
         def extract_rule(sentece):
-            #punc_list = ["，","。","！","？","、"]
-            punc_list = ['\xef\xbc\x8c',
-                         '\xe3\x80\x82',
-                         '\xef\xbc\x81',
-                         '\xef\xbc\x9f',
-                         '\xe3\x80\x81'
-                         ]
-            punc_list= [item.decode("utf-8") for item in punc_list]
+            punc_list = ["，","。","！","？","、"]
+            #punc_list = ['\xef\xbc\x8c',
+            #             '\xe3\x80\x82',
+            #             '\xef\xbc\x81',
+            #             '\xef\xbc\x9f',
+            #             '\xe3\x80\x81'
+            #             ]
+            try:
+                punc_list= [item.decode("utf-8") for item in punc_list]
+            except:
+                pass
             #print(type(punc_list[0]))
             rule_list = [j if j in punc_list else -1 for i,j in enumerate(sentece)]
             return rule_list, punc_list
