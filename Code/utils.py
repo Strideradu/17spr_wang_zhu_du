@@ -15,6 +15,66 @@ MAX_TANG_LENGTH = 100
 MIN_SONG_LENGTH = 56
 
 
+class RuleExtractor():
+    def __init__(self, selected_cipai=0, encoding="utf-8'"):
+        data_dir = '../Data'
+        input_file = os.path.join(data_dir,"quansongci_tab.txt")
+        self.cipai_list = self.get_cipai_list(input_file)
+        selected_cipai_index = min(selected_cipai, len(self.cipai_list))
+        self.cipai_line_list, self.cipai_rules = \
+            self.get_cipai_rule(input_file,selected_cipai_index)
+
+    def get_cipai_list(self,input_file):
+        def extract_cipai(line):
+            sentences = line.split()
+            return sentences[1]
+        with codecs.open(input_file, "r", encoding=self.encoding) as f:
+            cipai_list = list(map(extract_cipai,f.read().strip().split('\n')))
+
+        cipai_list = list(collections.Counter(cipai_list).items())
+
+        cipai_list = sorted(cipai_list,key=lambda x: x[1],reverse=True)
+        cipai_list = [cipai_pair[0] for cipai_pair in cipai_list]
+        print("Ci Pai number: "+ str(len(cipai_list)))
+        print("Most common cipai: "+ cipai_list[0])
+
+        return cipai_list
+
+    def get_cipai_rule(self, input_file, selected_cipai_index=0):
+        #huan xi sha is the default cipai
+        selected_cipai = self.cipai_list[selected_cipai_index]
+
+        #### Extracting rules
+        with codecs.open(input_file, "r", encoding=self.encoding) as f:
+            while True:
+                sentece = f.readline().strip().split()
+                if sentece[1] == selected_cipai:
+                        sentece = sentece[3]
+                        break
+        print("selecting template:")
+        print(sentece)
+
+        def extract_rule(sentece):
+            punc_list = ["，","。","！","？","、"]
+            #punc_list = ['\xef\xbc\x8c',
+            #             '\xe3\x80\x82',
+            #             '\xef\xbc\x81',
+            #             '\xef\xbc\x9f',
+            #             '\xe3\x80\x81'
+            #             ]
+            try:
+                punc_list= [item.decode("utf-8") for item in punc_list]
+            except:
+                pass
+
+            #print(type(punc_list[0]))
+            rule_list = [j if j in punc_list else -1 for i,j in enumerate(sentece)]
+            return rule_list, punc_list
+
+        rule_list, punc_list = extract_rule(sentece)
+        cipai_rule = (selected_cipai, rule_list, punc_list)
+        return cipai_rule
+
 
 class TextLoader():
 
@@ -99,7 +159,7 @@ class TextLoader():
         number_list = [int(i) for i in number_list.split()]
 
         number_list = range(len(poems_list))
-	
+
 
 
         #### Extracting rules

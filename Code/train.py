@@ -58,7 +58,9 @@ def train(args):
     print('finish readling file ...\n')
 
     args.vocab_size = data_loader.vocab_size
-    args.cipai_rules = data_loader.cipai_rules
+
+    #args.cipai_rules = data_loader.cipai_rules
+
     print("Capture Rules Suceessfully")
 
 
