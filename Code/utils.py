@@ -10,9 +10,11 @@ import numpy as np
 BEGIN_CHAR = '^'
 END_CHAR = '$'
 UNKNOWN_CHAR = '*'
-MAX_VOCAB_SIZE =600
+MAX_VOCAB_SIZE =3000
 MAX_TANG_LENGTH = 100
 MIN_SONG_LENGTH = 56
+
+
 
 class TextLoader():
 
@@ -26,6 +28,7 @@ class TextLoader():
         input_file = os.path.join(data_dir, "qts_without_tab.txt")
         input_file = os.path.join(data_dir, "qss_tab.txt")
         input_file = os.path.join(data_dir,"quansongci_tab.txt")
+
         vocab_file = os.path.join(data_dir, "vocab.pkl")
         tensor_file = os.path.join(data_dir, "data.npy")
 
@@ -94,6 +97,9 @@ class TextLoader():
         number_list= list(map(keep_line, poems_list, range(len(poems_list)),tmp_cipai))
         number_list = ''.join(number_list)
         number_list = [int(i) for i in number_list.split()]
+
+        number_list = range(len(poems_list))
+	
 
 
         #### Extracting rules
