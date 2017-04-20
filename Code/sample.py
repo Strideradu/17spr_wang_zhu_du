@@ -7,7 +7,8 @@ import argparse
 import os
 from six.moves import cPickle
 
-from model import Model, RuleExtractor
+from model import Model
+from utils import RuleExtractor
 
 
 def main():

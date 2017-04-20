@@ -21,6 +21,7 @@ class RuleExtractor():
         input_file = os.path.join(data_dir,"quansongci_tab.txt")
         self.cipai_list = self.get_cipai_list(input_file)
         selected_cipai_index = min(selected_cipai, len(self.cipai_list))
+        self.encoding = encoding
         self.cipai_line_list, self.cipai_rules = \
             self.get_cipai_rule(input_file,selected_cipai_index)
 
@@ -90,7 +91,9 @@ class TextLoader():
         input_file = os.path.join(data_dir,"quansongci_tab.txt")
 
         vocab_file = os.path.join(data_dir, "vocab.pkl")
-        tensor_file = os.path.join(data_dir, "data.npy")
+        rhyme_file = os.path.join(data_dir, "rhyme.pkl")
+        data_tensor_file = os.path.join(data_dir, "data_tensor.npy")
+        rhyme_tensor_file = os.path.join(data_dir, "rhyme_tensor.npy")
 
         self.cipai_list = self.get_cipai_list(input_file)
 
@@ -99,15 +102,10 @@ class TextLoader():
 
         ######################################
         # preprocess is the most key function we need to revise. -- By Judy
-        self.preprocess(line_list, input_file, vocab_file, tensor_file)
+        self.preprocess(line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file)
+        print("Rhyme load success...")
         ######################################
 
-        #if not (os.path.exists(vocab_file) and os.path.exists(tensor_file)):
-        #    print("reading text file")
-        #    self.preprocess(line_list, input_file, vocab_file, tensor_file)
-        #else:
-        #    print("loading preprocessed files")
-        #    self.load_preprocessed(vocab_file, tensor_file)
 
         self.create_batches()
         self.reset_batch_pointer()
@@ -181,7 +179,7 @@ class TextLoader():
             #             '\xe3\x80\x81'
             #             ]
             try:
-                punc_list= [item.decode("utf-8") for item in punc_list]
+                punc_list= [item.decode(self.encoding) for item in punc_list]
             except:
                 pass
             #print(type(punc_list[0]))
@@ -194,7 +192,7 @@ class TextLoader():
 
 
 
-    def preprocess(self, line_list, input_file, vocab_file, tensor_file):
+    def preprocess(self, line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file):
         def handle_poem_without_title(line):
             line = line.replace(' ','')
             if len(line) >= MAX_TANG_LENGTH:
@@ -249,60 +247,120 @@ class TextLoader():
         # count. -- By Judy
         self.vocab = dict(zip(self.chars, range(len(self.chars))))
 
+        ## get rhyme
+        from pypinyin import lazy_pinyin
+        self.rhymes = dict()
+        rhyme_set = set()
+        for word, ID in self.vocab.items():
+            #print(type(word),word)
+            try:
+                py = lazy_pinyin(word)
+                py = py[0].encode("utf-8")
+                vow_pos=[1 if i in 'aeiou' else -1 for i in py]
+                try:
+                    vow_start_index = vow_pos.index(1)
+                except:
+                    vow_start_index = len(vow_pos)
+                rhyme = py[vow_start_index:]
+            except:
+                rhyme = ''
+            self.rhymes[word] = rhyme
+            rhyme_set.add(rhyme)
+        rhyme_set = list(rhyme_set)
+
+        for word, rhyme in self.rhymes.items():
+            self.rhymes[word] = rhyme_set.index(rhyme)
+
+
         unknown_char_int = self.vocab.get(UNKNOWN_CHAR)
-        with open(vocab_file, 'wb') as f:
-            cPickle.dump(self.chars, f)
+        unknown_rhyme_int = self.rhymes.get(UNKNOWN_CHAR)
 
         # get int: a temporary function which returns the ID of an input word.
         # If the word does not exist, return the ID of '*'. --By Judy
         get_int = lambda char: self.vocab.get(char,unknown_char_int)
+        get_rhyme = lambda char: self.rhymes.get(char, unknown_rhyme_int)
+
         lines = sorted(lines,key=lambda line: len(line))
 
-        # tensor: a list of sentences. in each sentence, the character is
+        # data_tensor: a list of sentences. in each sentence, the character is
         # transformed to its associated ID. --By Judy
-        self.tensor = [ list(map(get_int,line)) for line in lines ]
-        with open(tensor_file,'wb') as f:
-            cPickle.dump(self.tensor,f)
+        self.data_tensor = [ list(map(get_int,line)) for line in lines ]
 
-    def load_preprocessed(self, vocab_file, tensor_file):
+        self.rhyme_tensor = [ list(map(get_rhyme,line)) for line in lines ]
+
+        self.poem_length = max(map(len,self.data_tensor))
+
+        with open(vocab_file, 'wb') as f:
+            cPickle.dump(self.chars, f)
+        with open(rhyme_file, 'wb') as f:
+            cPickle.dump(self.rhymes, f)
+        with open(data_tensor_file,'wb') as f:
+            cPickle.dump(self.data_tensor,f)
+        with open(rhyme_tensor_file, 'wb') as f:
+            cPickle.dump(self.rhyme_tensor,f)
+
+
+    def load_preprocessed(self, vocab_file, data_tensor_file, rhyme_tensor_file):
         with open(vocab_file, 'rb') as f:
             self.chars = cPickle.load(f)
-        with open(tensor_file,'rb') as f:
-            self.tensor = cPickle.load(f)
+        with open(data_tensor_file,'rb') as f:
+            self.data_tensor = cPickle.load(f)
+        with open(rhyme_tensor_file, 'rb') as f:
+            self.rhyme_tensor = cPickle.load(f)
+
         self.vocab_size = len(self.chars)
         self.vocab = dict(zip(self.chars, range(len(self.chars))))
 
     def create_batches(self):
-        self.num_batches = int(len(self.tensor) / self.batch_size)
-        self.tensor = self.tensor[:self.num_batches * self.batch_size]
+        self.num_batches = int(len(self.data_tensor) / self.batch_size)
+        self.data_tensor = self.data_tensor[:self.num_batches * self.batch_size]
+        self.rhyme_tensor = self.rhyme_tensor[:self.num_batches * self.batch_size]
+
         unknown_char_int = self.vocab.get(UNKNOWN_CHAR)
-        self.x_batches = []
-        self.y_batches = []
+        unknown_rhyme_int = self.rhymes.get(UNKNOWN_CHAR)
+
+        self.xdata_batches = []
+        self.xrhyme_batches = []
+
+        self.ydata_batches = []
+        self.yrhyme_batches = []
 
         for i in range(self.num_batches):
             from_index = i * self.batch_size
             to_index = from_index + self.batch_size
             # batches: batch_size poems
-            batches = self.tensor[from_index:to_index]
+            data_batches = self.data_tensor[from_index:to_index]
+            rhyme_batches = self.rhyme_tensor[from_index:to_index]
 
             # seq_length: number of characters in the longest poem in batches
-            seq_length = max(map(len,batches))
+            seq_length = max(map(len,data_batches))
 
             # xdata: a matrix of size batch_size X seq_length, inital valuse =
             # unknown_char_int
             xdata = np.full((self.batch_size,seq_length),unknown_char_int,np.int32)
+            xrhyme = np.full((self.batch_size,seq_length),unknown_rhyme_int,np.int32)
+
             for row in range(self.batch_size):
-                xdata[row,:len(batches[row])] = batches[row]
+                xdata[row,:len(data_batches[row])] = data_batches[row]
+                xrhyme[row,:len(rhyme_batches[row])] = rhyme_batches[row]
 
             ydata = np.copy(xdata)
             ydata[:,:-1] = xdata[:,1:]
-            self.x_batches.append(xdata)
-            self.y_batches.append(ydata)
+
+            yrhyme = np.copy(xrhyme)
+            yrhyme[:,:-1] = xrhyme[:,1:]
+
+            self.xdata_batches.append(xdata)
+            self.xrhyme_batches.append(xrhyme)
+
+            self.ydata_batches.append(ydata)
+            self.yrhyme_batches.append(yrhyme)
 
     def next_batch(self):
-        x, y = self.x_batches[self.pointer], self.y_batches[self.pointer]
+        xdata, ydata = self.xdata_batches[self.pointer], self.ydata_batches[self.pointer]
+        xrhyme, yrhyme = self.xrhyme_batches[self.pointer], self.yrhyme_batches[self.pointer]
         self.pointer += 1
-        return x, y
+        return xdata, ydata, xrhyme, yrhyme
 
     def reset_batch_pointer(self):
         self.pointer = 0

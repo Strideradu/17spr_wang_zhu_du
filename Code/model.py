@@ -38,29 +38,41 @@ class Model():
         ######   Add dropout: uncoment this block of code when you need ######
 
 
-        self.input_data = tf.placeholder(tf.int32, [args.batch_size, None])
         # the length of input sequence is variable.
-        self.targets = tf.placeholder(tf.int32, [args.batch_size, None])
+
+        #self.input_data = tf.placeholder(tf.int32, [args.batch_size, None])
+        self.input_data = tf.placeholder(tf.int32, [args.batch_size, None])
+
+        self.input_rhyme = tf.placeholder(tf.int32, [args.batch_size, None])
+
+        self.target_data = tf.placeholder(tf.int32, [args.batch_size, None])
+        #self.targets = tf.placeholder(tf.int32, [args.batch_size, args.poem_length, 2])
+
         self.initial_state = cell.zero_state(args.batch_size, tf.float32)
 
         with tf.variable_scope('rnnlm'):
             softmax_w = tf.get_variable("softmax_w", [args.rnn_size, args.vocab_size])
             softmax_b = tf.get_variable("softmax_b", [args.vocab_size])
             with tf.device("/cpu:0"):
-                embedding = tf.get_variable("embedding", [args.vocab_size, args.rnn_size])
-                inputs = tf.nn.embedding_lookup(embedding, self.input_data)
+                word_embedding = tf.get_variable("word_embedding", [args.vocab_size, args.rnn_size])
+                rhyme_embedding = tf.get_variable("rhyhme_embedding", [args.vocab_size, args.rnn_size])
+                inputs_data = tf.nn.embedding_lookup(word_embedding, self.input_data)
+                inputs_rhyme = tf.nn.embedding_lookup(rhyme_embedding, self.input_rhyme)
+
+                total_inputs = inputs_data + inputs_rhyme
 
         outputs, last_state = tf.nn.dynamic_rnn(cell,
-                                                inputs,
+                                                total_inputs,
                                                 initial_state=self.initial_state,
                                                 scope='rnnlm')
         output = tf.reshape(outputs,[-1, args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
+
         self.probs = tf.nn.softmax(self.logits)
-        targets = tf.reshape(self.targets, [-1])
+        target_data = tf.reshape(self.target_data, [-1])
         loss = legacy_seq2seq.sequence_loss_by_example([self.logits],
-                [targets],
-                [tf.ones_like(targets,dtype=tf.float32)],
+                [target_data],
+                [tf.ones_like(target_data,dtype=tf.float32)],
                 args.vocab_size)
         self.cost = tf.reduce_mean(loss)
         self.final_state = last_state
