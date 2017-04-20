@@ -334,7 +334,8 @@ class TextLoader():
             rhyme_batches = self.rhyme_tensor[from_index:to_index]
 
             # seq_length: number of characters in the longest poem in batches
-            seq_length = max(map(len,data_batches))
+            #seq_length = max(map(len,data_batches))
+            seq_length = self.poem_length
 
             # xdata: a matrix of size batch_size X seq_length, inital valuse =
             # unknown_char_int

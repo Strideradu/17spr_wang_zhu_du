@@ -21,7 +21,7 @@ class Model():
             raise Exception("model type not supported: {}".format(args.model))
 
 
-        cell = cell_fn(args.rnn_size,state_is_tuple=False)
+        cell = cell_fn(2*args.rnn_size,state_is_tuple=False)
         self.cell = cell = rnn.MultiRNNCell([cell] * args.num_layers,state_is_tuple=False)
 
 
@@ -41,17 +41,17 @@ class Model():
         # the length of input sequence is variable.
 
         #self.input_data = tf.placeholder(tf.int32, [args.batch_size, None])
-        self.input_data = tf.placeholder(tf.int32, [args.batch_size, None])
+        self.input_data = tf.placeholder(tf.int32, [args.batch_size, args.poem_length])
 
-        self.input_rhyme = tf.placeholder(tf.int32, [args.batch_size, None])
+        self.input_rhyme = tf.placeholder(tf.int32, [args.batch_size, args.poem_length])
 
-        self.target_data = tf.placeholder(tf.int32, [args.batch_size, None])
+        self.target_data = tf.placeholder(tf.int32, [args.batch_size, args.poem_length])
         #self.targets = tf.placeholder(tf.int32, [args.batch_size, args.poem_length, 2])
 
         self.initial_state = cell.zero_state(args.batch_size, tf.float32)
 
         with tf.variable_scope('rnnlm'):
-            softmax_w = tf.get_variable("softmax_w", [args.rnn_size, args.vocab_size])
+            softmax_w = tf.get_variable("softmax_w", [2*args.rnn_size, args.vocab_size])
             softmax_b = tf.get_variable("softmax_b", [args.vocab_size])
             with tf.device("/cpu:0"):
                 word_embedding = tf.get_variable("word_embedding", [args.vocab_size, args.rnn_size])
@@ -59,13 +59,16 @@ class Model():
                 inputs_data = tf.nn.embedding_lookup(word_embedding, self.input_data)
                 inputs_rhyme = tf.nn.embedding_lookup(rhyme_embedding, self.input_rhyme)
 
-                total_inputs = inputs_data + inputs_rhyme
+                #print(inputs_data.shape, inputs_data.dtype)
+                #print(inputs_rhyme.shape, inputs_rhyme.dtype)
+                #total_inputs = inputs_data + inputs_rhyme
+                total_inputs = tf.concat([inputs_data, inputs_rhyme], 2)
 
         outputs, last_state = tf.nn.dynamic_rnn(cell,
                                                 total_inputs,
                                                 initial_state=self.initial_state,
                                                 scope='rnnlm')
-        output = tf.reshape(outputs,[-1, args.rnn_size])
+        output = tf.reshape(outputs,[-1, 2*args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
 
         self.probs = tf.nn.softmax(self.logits)
