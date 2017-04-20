@@ -18,11 +18,12 @@ MIN_SONG_LENGTH = 56
 class RuleExtractor():
     def __init__(self, selected_cipai=0, encoding="utf-8'"):
         data_dir = '../Data'
+        self.encoding = encoding
         input_file = os.path.join(data_dir,"quansongci_tab.txt")
         self.cipai_list = self.get_cipai_list(input_file)
         selected_cipai_index = min(selected_cipai, len(self.cipai_list))
         self.encoding = encoding
-        self.cipai_line_list, self.cipai_rules = \
+        self.cipai_rules = \
             self.get_cipai_rule(input_file,selected_cipai_index)
 
     def get_cipai_list(self,input_file):
