@@ -83,7 +83,7 @@ class Model():
         optimizer = tf.train.AdamOptimizer(self.lr)
         self.train_op = optimizer.apply_gradients(zip(grads, tvars))
 
-    def sample(self, sess, chars, vocab, prime=u'', sampling_type=1, cipai_rules=None):
+    def sample(self, sess, chars, vocab, rhymes, prime=u'', sampling_type=1, cipai_rules=None):
 
         def pick_char(weights):
             if sampling_type == 0:
@@ -105,6 +105,8 @@ class Model():
             prime = u'^'
             result = u''
             x = np.array([list(map(vocab.get,prime))])
+
+            xrhyme = np.array([list(map(rhymes.get,prime))])
 
             ## generateing the first character
             #[probs,state] = sess.run([self.probs,self.final_state],
@@ -135,15 +137,16 @@ class Model():
                 while True:
                     [probs,state] = sess.run([self.probs,self.final_state],
                                              {self.input_data: x,
+                                              self.input_rhyme:xrhyme,
                                               self.initial_state: state})
                     c_char = pick_char(probs[-1])
                     if valid_char(punc_list, rule_list, c_char, i):
                         break
                     else:
-                        print("Invalid, try again ...")
+                        print("Invalid, try again ...",iter_count)
 
                     iter_count += 1
-                    if iter_count > 100:
+                    if iter_count > 10:
                         break
 
                 result += c_char

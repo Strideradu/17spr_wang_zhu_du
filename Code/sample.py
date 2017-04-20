@@ -29,10 +29,10 @@ def sample(args):
     with open(os.path.join(args.save_dir, 'config.pkl'), 'rb') as f:
         saved_args = cPickle.load(f)
     with open(os.path.join(args.save_dir, 'chars_vocab.pkl'), 'rb') as f:
-        chars, vocab = cPickle.load(f)
+        chars, vocab, rhymes = cPickle.load(f)
     model = Model(saved_args, True)
     rule_extractor = RuleExtractor(args.cipai)
-    args.cipai_rules = rule_extractor.cipai_rules 
+    args.cipai_rules = rule_extractor.cipai_rules
     with tf.Session() as sess:
         tf.global_variables_initializer().run()
         saver = tf.train.Saver(tf.global_variables())
@@ -42,6 +42,7 @@ def sample(args):
             print(model.sample(sess,
                                chars,
                                vocab,
+                               rhymes,
                                args.prime,
                                args.sample,
                                args.cipai_rules),"\n")
