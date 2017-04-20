@@ -134,18 +134,18 @@ class Model():
                     continue
 
                 iter_count = 0
+                [probs,state] = sess.run([self.probs,self.final_state],
+                                         {self.input_data: x,
+                                          self.input_rhyme:xrhyme,
+                                          self.initial_state: state})
                 while True:
-                    [probs,state] = sess.run([self.probs,self.final_state],
-                                             {self.input_data: x,
-                                              self.input_rhyme:xrhyme,
-                                              self.initial_state: state})
-                    c_char = pick_char(probs[-1])
+                    iter_count += 1
+                    c_char = pick_char(probs[-iter_count])
                     if valid_char(punc_list, rule_list, c_char, i):
                         break
                     else:
                         print("Invalid, try again ...",iter_count)
 
-                    iter_count += 1
                     if iter_count > 10:
                         break
 
