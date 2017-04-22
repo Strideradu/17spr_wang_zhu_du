@@ -19,7 +19,10 @@ class RuleExtractor():
     def __init__(self, selected_cipai=0, encoding="utf-8'"):
         data_dir = '../Data'
         self.encoding = encoding
-        input_file = os.path.join(data_dir,"quansongci_tab.txt")
+
+        #input_file = os.path.join(data_dir,"quansongci_tab.txt")
+        input_file = os.path.join(data_dir,"qts_without_tab.txt")
+
         self.cipai_list = self.get_cipai_list(input_file)
         selected_cipai_index = min(selected_cipai, len(self.cipai_list))
         self.encoding = encoding
@@ -80,31 +83,34 @@ class RuleExtractor():
 
 class TextLoader():
 
-    def __init__(self, batch_size, max_vocabsize=MAX_VOCAB_SIZE, encoding='utf-8'):
+    def __init__(self, batch_size, cipai=True, max_vocabsize=MAX_VOCAB_SIZE, encoding='utf-8'):
         self.batch_size = batch_size
         self.max_vocabsize = max_vocabsize
         self.encoding = encoding
 
         data_dir = '../Data'
 
-        input_file = os.path.join(data_dir, "qts_without_tab.txt")
         input_file = os.path.join(data_dir, "qss_tab.txt")
         input_file = os.path.join(data_dir,"quansongci_tab.txt")
+        input_file = os.path.join(data_dir, "qts_without_tab.txt")
 
         vocab_file = os.path.join(data_dir, "vocab.pkl")
         rhyme_file = os.path.join(data_dir, "rhyme.pkl")
         data_tensor_file = os.path.join(data_dir, "data_tensor.npy")
         rhyme_tensor_file = os.path.join(data_dir, "rhyme_tensor.npy")
 
-        self.cipai_list = self.get_cipai_list(input_file)
 
-        line_list, self.cipai_rules = self.get_lines_with_specified_cipai(input_file)
+        if "qts" not in input_file:
+            self.cipai_list = self.get_cipai_list(input_file)
+            line_list, self.cipai_rules = self.get_lines_with_specified_cipai(input_file)
+        else:
+            line_list = None
+            self.cipai_rules = None
 
 
         ######################################
         # preprocess is the most key function we need to revise. -- By Judy
-        self.preprocess(line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file)
-        print("Rhyme load success...")
+        self.preprocess(line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file, cipai)
         ######################################
 
 
@@ -193,7 +199,7 @@ class TextLoader():
 
 
 
-    def preprocess(self, line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file):
+    def preprocess(self, line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file, cipai):
         def handle_poem_without_title(line):
             line = line.replace(' ','')
             if len(line) >= MAX_TANG_LENGTH:
@@ -214,8 +220,11 @@ class TextLoader():
             print('Processing Quan Song Ci dataset ..')
             with codecs.open(input_file, "r", encoding=self.encoding) as f:
                 poems_list = f.read().strip().split('\n')
-            selected_poems_list = [poems_list[i] for i in line_list]
-            lines = list(map(handle_songci_with_title, selected_poems_list))
+            if cipai:
+                selected_poems_list = [poems_list[i] for i in line_list]
+                lines = list(map(handle_songci_with_title, selected_poems_list))
+            else:
+                lines = list(map(handle_songci_with_title, poems_list))
 
         elif 'without' in input_file:  # this is for preprocessing tang shi
             print('Processing Tangshi dataset ..')
@@ -301,13 +310,15 @@ class TextLoader():
             cPickle.dump(self.rhyme_tensor,f)
 
 
-    def load_preprocessed(self, vocab_file, data_tensor_file, rhyme_tensor_file):
+    def load_preprocessed(self, vocab_file, data_tensor_file, rhyme_file, rhyme_tensor_file):
         with open(vocab_file, 'rb') as f:
             self.chars = cPickle.load(f)
         with open(data_tensor_file,'rb') as f:
             self.data_tensor = cPickle.load(f)
         with open(rhyme_tensor_file, 'rb') as f:
             self.rhyme_tensor = cPickle.load(f)
+        with open(rhyme_file, 'rb') as f:
+            self.rhymes = cPickle.load(f)
 
         self.vocab_size = len(self.chars)
         self.vocab = dict(zip(self.chars, range(len(self.chars))))
@@ -358,11 +369,14 @@ class TextLoader():
             self.ydata_batches.append(ydata)
             self.yrhyme_batches.append(yrhyme)
 
-    def next_batch(self):
+    def next_batch(self, rhyme=True):
         xdata, ydata = self.xdata_batches[self.pointer], self.ydata_batches[self.pointer]
         xrhyme, yrhyme = self.xrhyme_batches[self.pointer], self.yrhyme_batches[self.pointer]
         self.pointer += 1
-        return xdata, ydata, xrhyme, yrhyme
+        if rhyme == True:
+            return xdata, ydata, xrhyme, yrhyme
+        else:
+            return xdata, ydata
 
     def reset_batch_pointer(self):
         self.pointer = 0

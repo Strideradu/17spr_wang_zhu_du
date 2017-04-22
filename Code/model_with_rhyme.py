@@ -21,7 +21,7 @@ class Model():
             raise Exception("model type not supported: {}".format(args.model))
 
 
-        cell = cell_fn(args.rnn_size,state_is_tuple=False)
+        cell = cell_fn(2*args.rnn_size,state_is_tuple=False)
         self.cell = cell = rnn.MultiRNNCell([cell] * args.num_layers,state_is_tuple=False)
 
 
@@ -40,32 +40,35 @@ class Model():
 
         # the length of input sequence is variable.
 
-        self.input_data = tf.placeholder(tf.int32, [args.batch_size, None])
+        #self.input_data = tf.placeholder(tf.int32, [args.batch_size, None])
+        self.input_data = tf.placeholder(tf.int32, [args.batch_size, args.poem_length])
 
-        self.input_rhyme = tf.placeholder(tf.int32, [args.batch_size, None])
-        #self.input_rhyme = tf.placeholder(tf.int32, [args.batch_size, args.poem_length])
+        self.input_rhyme = tf.placeholder(tf.int32, [args.batch_size, args.poem_length])
 
-        self.target_data = tf.placeholder(tf.int32, [args.batch_size, None])
+        self.target_data = tf.placeholder(tf.int32, [args.batch_size, args.poem_length])
+        #self.targets = tf.placeholder(tf.int32, [args.batch_size, args.poem_length, 2])
 
         self.initial_state = cell.zero_state(args.batch_size, tf.float32)
 
         with tf.variable_scope('rnnlm'):
-            softmax_w = tf.get_variable("softmax_w", [args.rnn_size, args.vocab_size])
+            softmax_w = tf.get_variable("softmax_w", [2*args.rnn_size, args.vocab_size])
             softmax_b = tf.get_variable("softmax_b", [args.vocab_size])
             with tf.device("/cpu:0"):
                 word_embedding = tf.get_variable("word_embedding", [args.vocab_size, args.rnn_size])
-                input_data = tf.nn.embedding_lookup(word_embedding, self.input_data)
+                rhyme_embedding = tf.get_variable("rhyhme_embedding", [args.vocab_size, args.rnn_size])
+                inputs_data = tf.nn.embedding_lookup(word_embedding, self.input_data)
+                inputs_rhyme = tf.nn.embedding_lookup(rhyme_embedding, self.input_rhyme)
 
-                #rhyme_embedding = tf.get_variable("rhyhme_embedding", [args.vocab_size, args.rnn_size])
-                #inputs_rhyme = tf.nn.embedding_lookup(rhyme_embedding, self.input_rhyme)
-
-                #total_inputs = tf.concat([inputs_data, inputs_rhyme], 2)
+                #print(inputs_data.shape, inputs_data.dtype)
+                #print(inputs_rhyme.shape, inputs_rhyme.dtype)
+                #total_inputs = inputs_data + inputs_rhyme
+                total_inputs = tf.concat([inputs_data, inputs_rhyme], 2)
 
         outputs, last_state = tf.nn.dynamic_rnn(cell,
-                                                input_data,
+                                                total_inputs,
                                                 initial_state=self.initial_state,
                                                 scope='rnnlm')
-        output = tf.reshape(outputs,[-1, args.rnn_size])
+        output = tf.reshape(outputs,[-1, 2*args.rnn_size])
         self.logits = tf.matmul(output, softmax_w) + softmax_b
 
         self.probs = tf.nn.softmax(self.logits)
@@ -106,67 +109,65 @@ class Model():
             result = u''
             x = np.array([list(map(vocab.get,prime))])
 
-            #xrhyme = np.array([list(map(rhymes.get,prime))])
+            xrhyme = np.array([list(map(rhymes.get,prime))])
 
+            ## generateing the first character
+            #[probs,state] = sess.run([self.probs,self.final_state],
+            #                         {self.input_data: x,
+            #                          self.initial_state: state})
+            #char = pick_char(probs[-1])
+            ## ##############################
+            print(cipai_rules)
+            selected_cipai = cipai_rules[0]
+            rule_list = cipai_rules[1]
+            punc_list = cipai_rules[2]
+            c_char = u''
 
-           # # ##############################
-           # print(cipai_rules)
-           # selected_cipai = cipai_rules[0]
-           # rule_list = cipai_rules[1]
-           # punc_list = cipai_rules[2]
-           # c_char = u''
+            def valid_char(punc_list,rule_list,c_char,index):
+                if c_char not in punc_list and rule_list[index] not in punc_list:
+                    return True
+                if c_char in punc_list and rule_list[index] in punc_list:
+                    return True
+                return False
 
-           # def valid_char(punc_list,rule_list,c_char,index):
-           #     if c_char not in punc_list and rule_list[index] not in punc_list:
-           #         return True
-           #     if c_char in punc_list and rule_list[index] in punc_list:
-           #         return True
-           #     return False
+            for i,c in enumerate(rule_list):
+                if c in punc_list:
+                    c_char = c
+                    result += c_char
+                    continue
 
-           # for i,c in enumerate(rule_list):
-           #     if c in punc_list:
-           #         c_char = c
-           #         result += c_char
-           #         continue
-
-           #     iter_count = 0
-           #     [probs,state] = sess.run([self.probs,self.final_state],
-           #                              {self.input_data: x,
-           #                               self.input_rhyme:xrhyme,
-           #                               self.initial_state: state})
-           #     while True:
-           #         iter_count += 1
-           #         c_char = pick_char(probs[-iter_count])
-           #         if valid_char(punc_list, rule_list, c_char, i):
-           #             break
-           #         else:
-           #             print("Invalid, try again ...",iter_count)
-
-           #         if iter_count > 10:
-           #             break
-
-           #     result += c_char
-           #     if c_char == u'$':
-           #         break
-           # return result
-           # ################################
-
-            # generateing the first character
-            [probs,state] = sess.run([self.probs,self.final_state],
-                                     {self.input_data: x,
-                                      self.initial_state: state})
-            char = pick_char(probs[-1])
-
-            while char != u'$':
-                result += char
-                x = np.zeros((1,1))
-                x[0,0] = vocab[char]
-                [probs,state] = sess.run([self.probs,
-                                          self.final_state],
+                iter_count = 0
+                [probs,state] = sess.run([self.probs,self.final_state],
                                          {self.input_data: x,
+                                          self.input_rhyme:xrhyme,
                                           self.initial_state: state})
-                char = pick_char(probs[-1])
+                while True:
+                    iter_count += 1
+                    c_char = pick_char(probs[-iter_count])
+                    if valid_char(punc_list, rule_list, c_char, i):
+                        break
+                    else:
+                        print("Invalid, try again ...",iter_count)
+
+                    if iter_count > 10:
+                        break
+
+                result += c_char
+                if c_char == u'$':
+                    break
             return result
+
+
+            #while char != u'$':
+            #    result += char
+            #    x = np.zeros((1,1))
+            #    x[0,0] = vocab[char]
+            #    [probs,state] = sess.run([self.probs,
+            #                              self.final_state],
+            #                             {self.input_data: x,
+            #                              self.initial_state: state})
+            #    char = pick_char(probs[-1])
+            #return result
         else:
             result = u'^'
             for prime_char in prime:

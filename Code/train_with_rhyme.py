@@ -11,7 +11,7 @@ import os,sys
 from six.moves import cPickle
 
 from utils import TextLoader
-from model import Model
+from model_with_rhyme import Model
 
 def main():
     parser = argparse.ArgumentParser()
