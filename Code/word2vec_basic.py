@@ -169,7 +169,6 @@ for i in range(8):
     print(batch[i], reverse_dictionary[batch[i]],
           '->', labels[i, 0], reverse_dictionary[labels[i, 0]])
 
-'''
 # Step 4: Build and train a skip-gram model.
 
 batch_size = 128
@@ -302,4 +301,3 @@ try:
 
 except ImportError:
   print("Please install sklearn, matplotlib, and scipy to visualize embeddings.")
-'''

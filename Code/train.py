@@ -48,13 +48,22 @@ def main():
                             'model.ckpt-*'      : file(s) with model definition (created by tf)
                         """)
     args = parser.parse_args()
+    args.cipai = False
     train(args)
 
 
 def train(args):
-    data_loader = TextLoader(args.batch_size)
+    data_loader = TextLoader(args.batch_size, args.cipai)
+    print(data_loader.cipai_rules)
+
     print('finish readling file ...\n')
+
     args.vocab_size = data_loader.vocab_size
+
+    #args.cipai_rules = data_loader.cipai_rules
+
+    print("Capture Rules Suceessfully")
+
 
     # check compatibility if training is continued from previously saved model
     if args.init_from is not None:
@@ -104,9 +113,9 @@ def train(args):
             for b in range(data_loader.num_batches):
                 iterations += 1
                 start = time.time()
-                x, y = data_loader.next_batch()
+                x, y = data_loader.next_batch(rhyme=False)
                 feed = {model.input_data: x,
-                        model.targets: y}
+                        model.target_data: y}
                 train_loss, _ , _ = sess.run(
                     [model.cost, model.final_state, model.train_op],
                     feed)
@@ -121,7 +130,8 @@ def train(args):
                 losses.append(train_loss)
                 if (e * data_loader.num_batches + b) % args.save_every == 0\
                     or (e==args.num_epochs-1 and b == data_loader.num_batches-1): # save for the last result
-                    checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
+                    #checkpoint_path = os.path.join(args.save_dir, 'model.ckpt')
+                    checkpoint_path = os.path.join(args.save_dir, 'tang_shi_model.ckpt')
                     saver.save(sess, checkpoint_path, global_step = iterations)
                     with open(os.path.join(args.save_dir,"iterations"),'wb') as f:
                         cPickle.dump(iterations,f)
