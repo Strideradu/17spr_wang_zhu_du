@@ -621,8 +621,11 @@ class Generator(object):
             count = count + 1
             if count > 5:
                 break
-
-        selected_rhythm = self._weighted_choice(narrow_candidate_rhythms)
+        if is_ping:
+            selected_rhythm = u'尤'
+        else:
+            selected_rhythm = u'宥'
+        # selected_rhythm = self._weighted_choice(narrow_candidate_rhythms)
         return selected_rhythm
 
     def _generate_common_words(self, rhythm, is_ping=True):
@@ -1047,14 +1050,14 @@ if __name__ == '__main__':
     generator = Generator(basepath, conf)
     title = u"浣溪沙"
     import random
-    for i in range(200):
+    for i in range(500):
         important_word_list = [u'东风', u'何处', u'人间', u'风流', u'西风', u'归来', u'春风', u'归去', u'梅花', u'相思', u'江南', u'如今', u'回首', u'阑干', u'多少', u'千里', u'明月', u'万里', u'相逢', u'芳草', u'天涯', u'黄昏', u'当年', u'风雨', u'依旧', u'一笑', u'尊前', u'当时', u'斜阳', u'风月', u'多情', u'故人', u'不知', u'无人', u'不见', u'凄凉', u'深处', u'平生', u'匆匆', u'无限', u'春色', u'一枝', u'时节', u'流水', u'扁舟', u'功名', u'西湖', u'今日', u'憔悴', u'一点', u'何事', u'黄花', u'一片', u'十分', u'消息', u'杨柳', u'神仙', u'心事', u'长安', u'去年', u'而今', u'鸳鸯', u'芙蓉', u'不是', u'桃花', u'人生', u'今夜', u'桃李', u'断肠', u'寂寞', u'往事', u'佳人', u'悠悠', u'惟有', u'一声', u'几度', u'蓬莱', u'何时', u'一曲', u'如何', u'燕子', u'无数', u'青山', u'肠断', u'时候', u'无情', u'海棠', u'清明', u'天上', u'笙歌', u'东君', u'明年', u'少年', u'昨夜', u'千古', u'一番', u'如许', u'天气',
                                u'行人', u'今年', u'如此', u'谁知', u'梨花', u'何人', u'垂杨', u'思量', u'帘幕', u'明朝', u'分付', u'缥缈', u'江山', u'富贵', u'只有', u'秋风', u'不须', u'酒醒', u'记得', u'庭院', u'依然', u'相对', u'十年', u'十里', u'有人', u'精神', u'今宵', u'夕阳', u'风光', u'歌舞', u'携手', u'落花', u'寒食', u'殷勤', u'几时', u'不堪', u'可怜', u'一夜', u'明日', u'何妨', u'旧时', u'分明', u'夜来', u'相见', u'今朝', u'重阳', u'几许', u'秋千', u'烟雨', u'自有', u'徘徊', u'珠帘', u'无奈', u'萧萧', u'乾坤', u'谁家', u'先生', u'黄金', u'登临', u'门外', u'只恐', u'不管', u'盈盈', u'惆怅', u'等闲', u'年少', u'行云', u'楼台', u'从今', u'归路', u'赢得', u'几番', u'容易', u'不到', u'飞絮', u'夜深', u'一年', u'花枝', u'中秋', u'白发', u'一时', u'不如', u'还是', u'纷纷', u'碧云', u'十二', u'此时', u'春光', u'年华', u'风吹', u'使君', u'池塘', u'红尘', u'清风', u'瑶池', u'风露', u'长生', u'一杯', u'无处', u'飞来', u'楼上', u'何须']
         important_words = random.sample(important_word_list, 2)
         user_input_dict = dict(
             title=u"浣溪沙", important_words=important_words, force_data_build=False)
         # Init
-        u = random.random() * 0.8
+        u = random.random() * 0.4
         # print 'ratio', u
         generator.search_ratio = u
         generator.force_data_build = user_input_dict["force_data_build"]
