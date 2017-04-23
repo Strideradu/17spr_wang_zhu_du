@@ -6,6 +6,7 @@ import os
 import collections
 from six.moves import cPickle,reduce,map
 import numpy as np
+from preprocess_huanxisha import preprocess_text
 
 BEGIN_CHAR = '^'
 END_CHAR = '$'
@@ -20,8 +21,8 @@ class RuleExtractor():
         data_dir = '../Data'
         self.encoding = encoding
 
-        #input_file = os.path.join(data_dir,"quansongci_tab.txt")
-        input_file = os.path.join(data_dir,"qts_without_tab.txt")
+        input_file = os.path.join(data_dir,"quansongci_tab.txt")
+        #input_file = os.path.join(data_dir,"qts_without_tab.txt")
 
         self.cipai_list = self.get_cipai_list(input_file)
         selected_cipai_index = min(selected_cipai, len(self.cipai_list))
@@ -91,8 +92,8 @@ class TextLoader():
         data_dir = '../Data'
 
         input_file = os.path.join(data_dir, "qss_tab.txt")
-        input_file = os.path.join(data_dir,"quansongci_tab.txt")
         input_file = os.path.join(data_dir, "qts_without_tab.txt")
+        input_file = os.path.join(data_dir,"quansongci_tab.txt")
 
         vocab_file = os.path.join(data_dir, "vocab.pkl")
         rhyme_file = os.path.join(data_dir, "rhyme.pkl")
@@ -102,15 +103,15 @@ class TextLoader():
 
         if "qts" not in input_file:
             self.cipai_list = self.get_cipai_list(input_file)
-            line_list, self.cipai_rules = self.get_lines_with_specified_cipai(input_file)
+            cipai_line_list, self.cipai_rules = self.get_lines_with_specified_cipai(input_file)
         else:
-            line_list = None
+            cipai_line_list = None
             self.cipai_rules = None
 
 
         ######################################
         # preprocess is the most key function we need to revise. -- By Judy
-        self.preprocess(line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file, cipai)
+        self.preprocess(cipai_line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file, cipai)
         ######################################
 
 
@@ -199,7 +200,7 @@ class TextLoader():
 
 
 
-    def preprocess(self, line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file, cipai):
+    def preprocess(self, cipai_line_list, input_file, vocab_file, rhyme_file, data_tensor_file, rhyme_tensor_file, cipai):
         def handle_poem_without_title(line):
             line = line.replace(' ','')
             if len(line) >= MAX_TANG_LENGTH:
@@ -221,10 +222,15 @@ class TextLoader():
             with codecs.open(input_file, "r", encoding=self.encoding) as f:
                 poems_list = f.read().strip().split('\n')
             if cipai:
-                selected_poems_list = [poems_list[i] for i in line_list]
+                selected_poems_list = [poems_list[i] for i in cipai_line_list]
                 lines = list(map(handle_songci_with_title, selected_poems_list))
             else:
                 lines = list(map(handle_songci_with_title, poems_list))
+
+            ##########################
+            extra_lines = preprocess_text()
+            lines += extra_lines
+            ##########################
 
         elif 'without' in input_file:  # this is for preprocessing tang shi
             print('Processing Tangshi dataset ..')

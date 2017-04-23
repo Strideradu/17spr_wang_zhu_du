@@ -1,9 +1,5 @@
 title 浣溪沙
-important_words 珠帘 中秋
-Building prefix dict from the default dictionary ...
-Loading model from cache c:\users\wang\appdata\local\temp\jieba.cache
-Loading model cost 0.611 seconds.
-Prefix dict has been built succesfully.
+important_words 珠帘 中秋 
 平分飞花山中流,昏黄金阙两悠悠.故人惊觉水西畴. | 前舞衣初时相候,别来隋柳几经秋.阿娇小雨湿温柔.
 title 浣溪沙
 important_words 还是 使君
