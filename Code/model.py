@@ -108,49 +108,6 @@ class Model():
 
             #xrhyme = np.array([list(map(rhymes.get,prime))])
 
-
-           # # ##############################
-           # print(cipai_rules)
-           # selected_cipai = cipai_rules[0]
-           # rule_list = cipai_rules[1]
-           # punc_list = cipai_rules[2]
-           # c_char = u''
-
-           # def valid_char(punc_list,rule_list,c_char,index):
-           #     if c_char not in punc_list and rule_list[index] not in punc_list:
-           #         return True
-           #     if c_char in punc_list and rule_list[index] in punc_list:
-           #         return True
-           #     return False
-
-           # for i,c in enumerate(rule_list):
-           #     if c in punc_list:
-           #         c_char = c
-           #         result += c_char
-           #         continue
-
-           #     iter_count = 0
-           #     [probs,state] = sess.run([self.probs,self.final_state],
-           #                              {self.input_data: x,
-           #                               self.input_rhyme:xrhyme,
-           #                               self.initial_state: state})
-           #     while True:
-           #         iter_count += 1
-           #         c_char = pick_char(probs[-iter_count])
-           #         if valid_char(punc_list, rule_list, c_char, i):
-           #             break
-           #         else:
-           #             print("Invalid, try again ...",iter_count)
-
-           #         if iter_count > 10:
-           #             break
-
-           #     result += c_char
-           #     if c_char == u'$':
-           #         break
-           # return result
-           # ################################
-
             # generateing the first character
             [probs,state] = sess.run([self.probs,self.final_state],
                                      {self.input_data: x,

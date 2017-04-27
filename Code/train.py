@@ -15,7 +15,7 @@ from model import Model
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--save_dir', type=str, default='save',
+    parser.add_argument('--save_dir', type=str, default='save_huanxisha',
                        help='directory to store checkpointed models')
     parser.add_argument('--rnn_size', type=int, default=128,
                        help='size of RNN hidden state')
@@ -48,7 +48,7 @@ def main():
                             'model.ckpt-*'      : file(s) with model definition (created by tf)
                         """)
     args = parser.parse_args()
-    args.cipai = False
+    args.cipai = True
     train(args)
 
 
@@ -59,8 +59,6 @@ def train(args):
     print('finish readling file ...\n')
 
     args.vocab_size = data_loader.vocab_size
-
-    #args.cipai_rules = data_loader.cipai_rules
 
     print("Capture Rules Suceessfully")
 
