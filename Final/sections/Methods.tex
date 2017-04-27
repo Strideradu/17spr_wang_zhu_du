@@ -1,4 +1,4 @@
-% !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17Project/17spr_wang_zhu_du/Middle/middle_report.tex
+% !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17spr_wang_zhu_du/Final/final_report.tex
 \section{Methods}   
 To automatically generate SongCi,  
 First, we pre-process the SongCi corpus and tokenize each character.
@@ -8,6 +8,8 @@ Then we use a vector space model to convert each Chinese character in the corpus
 Using the vector space as training data, we build a Recurrent Neural Network (RNN) that can generate SongCi with coherent and poetic meanings.
 %
 We add Long short-term memory (LSTM) units in our RNN model to capture long-term semantic dependencies in Song Ci.
+\subsection{Genetic Algorithm}
+\wei{To be Continued}
 
 \subsection{RNN}
 %
@@ -45,3 +47,7 @@ q_i^{(t)} &=& \sigma (b_i^o + \sum_{j}U_{i,j}^o x_j^{(t)} +\sum_{j}W_{i,j}^o h_j
 \end{eqnarray*}
 
 LSTM is proven to be able to learn long-term dependencies more effectively than normal RNNs. In our project, we will use LSTM as our main method. We also plan to compare LSTM performance with other network structures.
+
+\subsection{Generative Adversarial Networks}
+\nan{To be Continued ...}
+
