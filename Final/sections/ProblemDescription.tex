@@ -1,0 +1,64 @@
+% !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17Project/17spr_wang_zhu_du/Middle/middle_report.tex
+\section{Problem Description}
+\subsection{Motivation}  
+%
+In this project, we propose and evaluate different approaches to automatically generate Chinese poems. 
+%
+Especially, we study how to automatically generate Chinese Song Ci using Recurrent Neural Networks.
+%
+Ci are one of the most important genres of Chinese classical poetry. 
+%
+As a precious cultural heritage, not many of them have been passed down onto the current generation.
+%
+Therefore, the study of automatic generation of Ci is meaningful, not only because it supplements entertainment and education resources to modern society, but also because it demonstrates the feasibility of applying artificial intelligence in Art generation. 
+%
+
+\subsection{Background}
+Song Ci is a form of Chinese classical poetry. It arose with the so-called banquet music in Tang dynasty and reached its peak one hundred years later, as a major alternative to Shi poetry\cite{cai2008chinesepoetry} .
+
+Derived from the structure used in Tang poetry, Ci follows strict rule determining the number of characters for different lines, the arrangement of rhyme, and the location of tones. There are more than 800 rule sets for Ci, which is called Cipai\cite{wikici}. The author of Ci needs to fill in the words according to the matrix associated to the Cipai. The uneven lines in Ci follow more continuous syntax than traditional Chinese Tang poetry\cite{cai2008chinesepoetry}.
+
+\subsection{Proposed Approach} 
+%
+We propose a Recurrent Neural Network model with Long Short Term Memory (LSTM) units to generate Song Ci automatically. .
+%
+First, our system will prompt the user to provide a Cipai name which defines the style of the poem.
+%
+As Ci belonging to different Cipai conveys different grammatical rules and emotions.
+%
+Next, the system will receive few of keyword inputs that capture the detailed sentiments of the Song Ci.
+%
+Then it will generate the first sentence of the poetry based on the above two inputs.
+%
+Further, the system generates the following sentences based on previously-generated contexts using both RNN. 
+%
+To achieve that, we add LSTM units into the model iteration step in order to capture semantic relevance in long distance. 
+%
+Finally, we will evaluate the quality of the generated Ci using an evaluation tool named BLEU.
+
+\subsection{Technical Challenges and Proposed Solutions} 
+The first challenge to build a general model for all types of Song Ci.
+%
+Different from Shi poetry whose structure is strict,  Song Ci has more than 800 set of Cipai, and different Cipai follows different structural or rhythmic patterns.
+%
+Therefore, it is difficult to generalize templates or rules for all the Song Ci from limited training dataset.
+% 
+Our solution is to create a model based on Recurrent Neural Network. For every line generated in the SongCi, its probability is based on the probability of all previously lines.
+%
+So that the grammatical and rhythmic rules can be automatically captured.
+
+
+The second challenge is to extract useful features from our training corpus.
+%
+Inappropriate feature extraction approach may lose the semantic meaning of each character which leads to meaningless outputs from the system.
+%
+Our solution is to build a vector space model to pre-process the poetry corpus. We first tokenize each Chinese character in the corpus, and then represent each character as a vector which retains the semantic relations among different characters. Therefore, characters with similar meanings have smaller distance in the vector space, while characters that are irrelevant in meanings have larger distance. 
+
+
+The third challenge is to maintain consistent and poetic meanings throughout the generated SongCi.
+%
+Compared with Shi poetry, Song Ci are much longer in length and therefore more complicated in context.
+%
+It is difficult to keep long-distance memory using conventional RNN.
+% 
+Our solution is to use a Long Short Term Memory (LSTM) model that can track the long-distance semantic information automatically. 
