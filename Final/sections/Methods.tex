@@ -1,0 +1,47 @@
+% !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17Project/17spr_wang_zhu_du/Middle/middle_report.tex
+\section{Methods}   
+To automatically generate SongCi,  
+First, we pre-process the SongCi corpus and tokenize each character.
+%
+Then we use a vector space model to convert each Chinese character in the corpus to be a vector presentation in the vector space so that characters with similar semantic meanings have small distance in the vector space.
+%
+Using the vector space as training data, we build a Recurrent Neural Network (RNN) that can generate SongCi with coherent and poetic meanings.
+%
+We add Long short-term memory (LSTM) units in our RNN model to capture long-term semantic dependencies in Song Ci.
+
+\subsection{RNN}
+%
+%
+RNNs are the family of the deep learning structures to process sequential data  \cite{rumelhart1986}. 
+%
+Parameter sharing across the different parts of the model is the key idea that makes RNNs to be able to deal with the sequential data. 
+%
+However, a simple RNNs cannot learn long time dependency as in the optimization this term tends to vanish or explode very fast \cite{goodfellow2016deeplearning}. 
+%
+To solve this challenge, gated RNNs is proposed and becomes one of the most effective practical models that used for sequential data.
+
+\subsection{LSTM}
+Long short-term memory (LSTM) model \cite{hochreiter1997lstm} is one branch of such gated RNNs that is extremely successful in the application like speech recognition, machine translation, and handwriting generation. 
+%
+The key idea of LSTM is to introduce a self loop so that gradient can flow for long duration. The self loop (internal recurrence) is located in "LSTM cells" with outer recurrence like ordinary recurrent network. The weight of self-loop is controlled by a forget gate \(f_i^{(t)}\)
+:
+\[f_i^{(t)} = \sigma (b_i^f + \sum_{j}U_{i,j}^f x_j^{(t)} +\sum_{j}W_{i,j}^f h_j^{(t-1)} ) \]
+Where \(\boldsymbol{x}^{(t)}\) is the current input vector and \(\boldsymbol{h}^{(t)}\) is the current hidden layer vector, containing the outputs of all the LSTM cells. \(\boldsymbol{b}^f\), \(\boldsymbol{U}^f\), and \(\boldsymbol{W}^f\) are biases, input weights, and recurrent weights of the forget gate, respectively. The internal state of LSTM cell is updated with the following equation:
+\begin{small}
+\[s_i^{(t)} = f_i^{(t)}s_i^{(t-1)}+g_i^{(t)}\sigma(b_i + \sum_{j}U_{i,j}^f x_j^{(t)} +\sum_{j}W_{i,j}^f h_j^{(t-1)} )\]
+\end{small}
+And the external input gate unit 
+\(g_i^{(t)} \)
+is computed with the following equation:
+\[g_i^{(t)} = \sigma (b_i^g + \sum_{j}U_{i,j}^g x_j^{(t)} +\sum_{j}W_{i,j}^g h_j^{(t-1)} ) \]
+The output 
+\(h^{(t)}\)
+and the output gate 
+\(q_i^{(t)}\)
+, are updated using sigmoid function also:
+\begin{eqnarray*}
+h_i^{(t)} &=& \tanh (s_i^{(t)})q_i^{(t)}\\
+q_i^{(t)} &=& \sigma (b_i^o + \sum_{j}U_{i,j}^o x_j^{(t)} +\sum_{j}W_{i,j}^o h_j^{(t-1)} )
+\end{eqnarray*}
+
+LSTM is proven to be able to learn long-term dependencies more effectively than normal RNNs. In our project, we will use LSTM as our main method. We also plan to compare LSTM performance with other network structures.
