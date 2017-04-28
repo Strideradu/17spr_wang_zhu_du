@@ -1,5 +1,5 @@
-% !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17Project/17spr_wang_zhu_du/Middle/middle_report.tex
-\section{Project Milestones}
+% !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17spr_wang_zhu_du/Final/final_report.tex
+\section{Evalutaion}
 
 \subsection{Completed Milestones}
 %
@@ -43,12 +43,6 @@ Word frequency analysis is to statistic and analyze the number of important word
 \end{figure}
 %
 From most frequently used words, shown in Figure \ref{fig:wordcloud}, we found that the moon, east wind, mortal world, wine, dream, rain, flowers , sunset, old friends are the most commonly used images. Commonly used places, including Jiangnan, West Lake, Changan, Fairy Isle, Yangzhou. Commonly used verbs including laugh , come back, go back, lovesickness, look back, meet by chance. Commonly used emotions are hate, worry, hard, sigh, desolate, haggard. These words represent a very broad theme and style of Ci, including the description of leaving and missing, pride and enthusiasm, seasonal terms, chanting things, chanting nostalgia and so on.
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.9\linewidth]{wordcloud.png}
-	\caption{Wordcould of Frequently Used Words in Dataset}
-	\label{fig:wordcould}
-\end{figure}
 %
 \subsubsection{ Implementation of a Vector Space Model }
 Vector space models (VSMs) represent words in a continuous vector space where semantically similar words are mapped to nearby points.
@@ -59,11 +53,24 @@ We implemented this model to find the semantic relations between each Chinese ch
 %
 We give a visualized result in Figure \ref{fig:VSM}. The figure is embeded with 100 Chinese characters in a 2-D space, which are randomly chosen from the most frequent 500 Chinese characters in the Song Ci corpus. The 2-D space corresponds to the first two dimensions in the vector space. We can see that words such as `spring', `sunny', and `breeze' are very close in the 2-D space, which convey similar sentimental feelings to readers. 
 
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.9\linewidth]{rhyme_input}
+	\caption{Extracting rhythmic features}
+	\label{fig:rhyme_features}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.9\linewidth]{RNN_model}
+	\caption{Workflow of the RNN model}
+	\label{fig:rnn_workflow}
+\end{figure}
 
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.9\linewidth]{tsne.png}
-	\caption{Vector Space Model}
+	\caption{Projections of most frequent characters to a 2-D space using the word embedding model}
 	\label{fig:VSM}
 \end{figure}
 \subsubsection{ Implementation of a RNN + LSTM Model  }
@@ -72,27 +79,21 @@ We implement a preliminary version of our model. It is a RNN model with Long Sho
 We used deep learning packages called \emph{TensorFlow} \cite{tensorflow} to implement our model. The code is written in Python.
 %
 We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain poem.  
-\begin{figure}[htbp]
+\begin{figure*}[htbp]
 	\centering
-	\includegraphics[width=0.65\linewidth]{poetry}
-	\caption{A quatrain poem generated using our RNN+LSTM model}
+	\includegraphics[width=0.8\linewidth]{poem_template}
+	\caption{A Song Ci generated using LSTM}
 	\label{fig:poetry}
-\end{figure}
+\end{figure*}
 
+\begin{figure*}[htbp]
+	\centering
+	\includegraphics[width=0.8\linewidth]{poem_template2}
+	\caption{A Song Ci generated using Genetic Algorithm }
+	\label{fig:poetry}
+\end{figure*}
 
-\subsection{Remaining Milestones}
-%
-\subsubsection{Implementation of Song Ci Generating Model }
-We used the Tang poetry corpus to train our model so the generated poem looks more like Tang poem than Song Ci. 
-%
-In our next step, we will explore the Song Ci dataset and focus on generating Song Ci poems.
-%
-We will continue to explore approaches to improve the performance of our model.
-
-\subsubsection{Model Testing and Comparison}
-We plan to use the valuation tools BLEU \cite{papineni2002bleu} to analyze the performance of the model. We will also compare the performance of our model with models proposed by state-of-the-art approaches.
-
-\subsubsection{Project Writing} We plan to spend one week on writing  the final report.
+ 
 
 
 

@@ -1,6 +1,5 @@
 \documentclass{sig-alternate-10pt}
-\usepackage{multirow, rotating, amsmath, wasysym}
-\usepackage[tight]{subfigure}
+ \usepackage[tight]{subfigure}
 \usepackage[ruled,linesnumbered,vlined]{algorithm2e}
 \usepackage{hyperref}
 \usepackage{color,soul}
@@ -36,8 +35,8 @@
 
 \definecolor{pink}{rgb}{0.858, 0.188, 0.478}
 
-\newcommand{\nan}[1]{\sethlcolor{pink}\hl{[Nan: #1]}}
-\newcommand{\wei}[1]{\sethlcolor{green}\hl{Wei: #1}}
+\newcommand{\nan}[1]{\sethlcolor{green}\hl{[Nan: #1]}}
+\newcommand{\wei}[1]{\sethlcolor{pink}\hl{Wei: #1}}
 \newcommand{\judy}[1]{\sethlcolor{yellow}\hl{Judy: #1}}
 
 \title{Learning to be Poetic:\\
@@ -75,7 +74,8 @@ Zhuangdi Zhu\\
 \input{sections/RelatedWork}
 \input{sections/Methods}
 \input{sections/DataDescription}
-\input{sections/ProjectMilestones}
+\input{sections/ExperimentalResults.tex}
+\input{sections/Conclusions.tex}
 \bibliographystyle{abbrv}
 \bibliography{middle_report}
 \end{document}
