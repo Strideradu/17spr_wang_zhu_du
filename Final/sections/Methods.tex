@@ -1,11 +1,11 @@
 % !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17spr_wang_zhu_du/Final/final_report.tex
 \section{Methods}
-To automatically generate SongCi,
-First, we pre-process the SongCi corpus and tokenize each character.
+To automatically generate Song Ci,
+First, we pre-process the Song Ci corpus and tokenize each character.
 %
 Then we use a vector space model to convert each Chinese character in the corpus to be a vector presentation in the vector space so that characters with similar semantic meanings have small distance in the vector space.
 %
-Using the vector space as training data, we build a Recurrent Neural Network (RNN) that can generate SongCi with coherent and poetic meanings.
+Using the vector space as training data, we build a Recurrent Neural Network (RNN) that can generate Song Ci with coherent and poetic meanings.
 %
 We add Long short-term memory (LSTM) units in our RNN model to capture long-term semantic dependencies in Song Ci.
 \subsection{Genetic Algorithm}
@@ -39,9 +39,9 @@ The new generation will enter the next iteration of the algorithm.
 When the population reached a certain stop criteria, for example a satisfactory fitness level has been reached or a maximum number of generations has been produced.
 
 
-In 2016, Zhou et al.\cite{zhou2010genetic} proposed an approach to automatically generate Songci by genetic algorithm.
+In 2016, Zhou et al.\cite{zhou2010genetic} proposed an approach to automatically generate Song Ci by genetic algorithm.
 %
-This approach implement a fitness function that is designed for evaluate the performance of Songci by considering the level and oblique tones-based coding method and the syntactic and semantic correctness.
+This approach implement a fitness function that is designed for evaluate the performance of Song Ci by considering the level and oblique tones-based coding method and the syntactic and semantic correctness.
 
 
 \subsection{RNN}
