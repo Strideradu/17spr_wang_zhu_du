@@ -27,4 +27,6 @@ In general, this kind of approach will generate new sentence based on previously
 For example, Zhang \etal built a quatrain generation model using a Recurrent Neural Network model.  Their model generates the first line of the poetry from the given keywords, and then generate subsequent lines by backtracking the status of the lines previously generated.
 % 
 
-\textbf{Using GAN} \nan{Softy kitty warm kitty little ball of fur ...}
+\textbf{Using Generative Adversarial Networks(GANs) } 
+
+GANs is a popular deep generative model that paring a generator networks and a discriminator networks\cite{goodfellow2014gan}.　Most GANs works focus on the computer vision and graphics area, like colorization or image construction. GANs Model based on RNNs can be used to generate musics\cite{mogren2016crnngan} and texts\cite{yu2016seqgan}. In Yu \etal paper, they also generate poem to serve as one example to evaluate the performance of their model. We want to extend this work by train with dataset of Song Ci to further evaluate its performance.
