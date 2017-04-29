@@ -1,49 +1,10 @@
 % !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17spr_wang_zhu_du/Final/final_report.tex
 \section{Evalutaion}
 For each of the three approaches, we use the same preprocessing steps to get the same features. Then we compare among the  Song Ci generated from the three approaches based on three metrics : structure, rhyme, and semantics. 
-\input{sections/DataDescription}
-\subsubsection{Background Survey}
-% For this initial step, we plan to search for related works to computational literary creation to gain the basic knowledge of Song Ci.
-%
-We conducted large amount of survey on the state of the art approaches of SongCi generation.
-%
-We find that this task attracts many interests both from the Natural Language Processing area and Machine Learning area.
-%
-The approaches can be generalized into two kinds:  We either specify the generation rules (using templates), or build a model which can learn these rules automatically ( using neural network).
-%
-We also implemented some of the approaches proposed in previous work.
-%
-%
-%
-\subsubsection {Corpus Search and Analysis}
-%
-The dataset we use contains 18668 Ci, which contains a total number of 1183 poets and 1170 Pai. This dataset basically covers Ci generated during the entire Song Dynasty and the beginning of Yuan Dynasty. We analyze the number of poems wrote by each poet, which shown in Figure \ref{fig:poet}. Most of the poems are created by the first poets. The one that creates the most poems is Qiji Xin, one of the most famous poet of the Southern Song Dynasty. His poems covers a wide range of styles. Among all those poems, the bold style is most will known by now. In addition, we statistic the Pai of each poem. Ci was first used as a lyric, and Pai is the name of the tune. Each Pai has a specific melody and rhythm, so Ci has a fixed format requirements, such as the number of sentences, the number of words per sentence, pronunciation of those words, rhyme and so on. The statistical result is shown in Figure \ref{fig:Pai}. The most popular Pai is Silk-Washing Stream, followed by Prelude To Water Melody, Partridge Sky, Pusaman and River of Red. And there is good reason to believe that the songs that corresponding to these Pai are beautiful in melody, lively in rhythm and easy to sung, which caused them to be so popular in ancient China.
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.9\linewidth]{poets.png}
-	\caption{Poem Number Created by Top 50 Productive Poets}
-	\label{fig:poet}
-\end{figure}
 
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.9\linewidth]{Pai.png}
-	\caption{Poem Number of Top 50 Popular Pai}
-	\label{fig:pai}
-\end{figure}
-%
+\input{sections/DataDescription} 
 
-Word frequency analysis is to statistic and analyze the number of important words in the text, which is an important method of text mining. It is a traditional and useful content analysis method. The basic principle is to determine the overall style and theme of the entire article by the frequency of the words. By analyzing the word frequency in the poems, we have a general understanding of the style of poems and the process of writing those the poem, which can help us get more familiar with the grammar rules and themes of Ci. The most commonly used words can reveal common theme of Ci and the corresponding feelings. For example, we analyzed word frequency of season in our database. The result is shown in Figure \ref{fig:season}. We found that spring related words reached 2606, these words appeared in our dataset for 9210 times. Followed by autumn, there are 1167 words associated with autumn and appeared 3992 times. The unique scene in spring and autumn can trigger people's emotions, which might be the reason that so many poems are related with these two seasons.
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.8\linewidth]{season.png}
-	\caption{Statistical Data of Season Related Word Frequency in Dataset}
-	\label{fig:season}
-\end{figure}
-%
-From most frequently used words, shown in Figure \ref{fig:wordcloud}, we found that the moon, east wind, mortal world, wine, dream, rain, flowers , sunset, old friends are the most commonly used images. Commonly used places, including Jiangnan, West Lake, Changan, Fairy Isle, Yangzhou. Commonly used verbs including laugh , come back, go back, lovesickness, look back, meet by chance. Commonly used emotions are hate, worry, hard, sigh, desolate, haggard. These words represent a very broad theme and style of Ci, including the description of leaving and missing, pride and enthusiasm, seasonal terms, chanting things, chanting nostalgia and so on.
-%
-\subsubsection{Implementation of Genetic Algorithm and Additional Information Collection}
+\subsection{Implementation of Genetic Algorithm}
 Initially, we collect additional information about syntactic pattern of sentences with different length, format of tone pattern and rhythm and format of different Cipai from past research work on Song Ci.
 %
 The syntactic pattern for traditional Chinese poem are shown in Figure \ref{fig:syntactic}.
@@ -134,14 +95,33 @@ The whole process is shown in Figure \ref{fig:GA}.
 Final results are shown in following section.
 
 
-\subsubsection{ Implementation of a Vector Space Model }
-Vector space models (VSMs) represent words in a continuous vector space where semantically similar words are mapped to nearby points.
-%
-We implemented this model to find the semantic relations between each Chinese character, so that given a few of keyword characters, such as 'spring' and 'beauty', we can generate poetries with coherent meanings using characters which are close to these keywords in the vector space.
+\subsection{Implementation of a Word Embedding Model }
+A word embedding model represent words in a continuous vector space where semantically similar words are mapped to nearby points.
+%We implemented this model to find the semantic relations between each Chinese character, so that given a few of keyword characters, such as 'spring' and 'beauty', we can generate poetries with coherent meanings using characters which are close to these keywords in the vector space.
 %
 %We use a predictive method to implement this  model based on the TensorFlow programming package \cite{tensorflow}.
 %
-We give a visualized result in Figure \ref{fig:VSM}. The figure is embeded with 100 Chinese characters in a 2-D space, which are randomly chosen from the most frequent 500 Chinese characters in the Song Ci corpus. The 2-D space corresponds to the first two dimensions in the vector space. We can see that words such as `spring', `sunny', and `breeze' are very close in the 2-D space, which convey similar sentimental feelings to readers.
+We give a visualized result in Figure \ref{fig:VSM}. 
+%
+Each of the Chinese characters is embedded into a 2-D space, which are randomly chosen from the most frequent 500 Chinese characters in the Song Ci corpus. The 2-D space corresponds to the first two dimensions in the vector space. We can see that words such as `spring', `sunny', and `breeze' are very close in the 2-D space, which convey similar sentimental feelings to readers.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\linewidth]{tsne.png}
+	\caption{Projections of most frequent characters to a 2-D space using the word embedding model}
+	\label{fig:VSM}
+\end{figure}
+
+
+\subsection{Implementation of an RNN Model} 
+%
+We used deep learning Python modules called \emph{TensorFlow} \cite{tensorflow} to implement our RNN model. The core parameters are given in Table \ref{fig:rnn_workflow}.
+%
+The core of the model consists of an LSTM cell that processes one word at a time and computes probabilities of the possible values for the next word in the sentence. 
+%
+The general workflow of our model is shown in Figure \ref{fig:rnn_workflow}.
+%
+aThe memory state of the network is initialized with a vector of zeros and gets updated after reading each word. 
 
 
 
@@ -152,35 +132,63 @@ We give a visualized result in Figure \ref{fig:VSM}. The figure is embeded with 
 	\label{fig:rnn_workflow}
 \end{figure}
 
+\begin{table}[htpb]
+\centering
+\caption{RNN model parameters}
+\label{table:rnn}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parameter}      & \textbf{Value} \\ \hline
+\textbf{batch\_size}    & 64             \\ \hline
+\textbf{embedding size} & 64             \\ \hline
+\textbf{hidden layer}   & 48             \\ \hline
+\textbf{dropout rate}   & 0.8            \\ \hline
+\textbf{learning rate}  & 0.0001         \\ \hline
+\textbf{epoch time}     & 50             \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+\item \textbf{Batch Input.} We want to train the RNN model in an iterative fashion, so the first step is to seperate the training set into different batches with the same size. The larger the batch, the less epoch time the model needs to finish training. In our model, we tune the batch size to be 64, so each time a set of 64 Song Ci will be used as the input to our model, and the value of the model state is updated after processing each batch of texts.
+
+\item \textbf{Truncated Backpropagation} In order to make the learning process tractable, it is important to create an unrolled version of the network which contains a fixed number of LSTM inputs and outputs, known as the number of steps. The model is then trained on this finite approximation of the RNN. 
+%
+In our model, we tune the number of steps to be the ideal character length in the Song Ci with a specified Ci Pai. For example, in order to train a Song Ci with Ci Pai ''Sandy Creek Washers", we set this number to be 48, because the input Song Ci is all of length 48 at a time.
+%
+Then we can perform a backward pass after each such input block.
+
+\item \textbf{Optimizing Loss Function} We aim to minimize the average negative log probability of the target words: 
+\begin{align*}
+\text{loss} = -\frac{1}{N} \sum_{i=1}^{N} \ln p_{target_i}
+\end{align*}
+We implement by using \emph{TensorFlow} 's \emph{seq2seq} library. It will generate the weighted cross-entropy loss for a sequence of logits, based on three inputs: the logits, the targets, and the weights. 
+
+ 
+\item \textbf{Stacking Multiple LSTMs} We  use multiple layers of LSTMs to process the data so that the output of the current layer will become the input of its succesor.
+%
+In our model,  we use the libray called \emph{MultiRNNCell} to implement three LSTM networks to strike a balance between the training time and the quality of the model output.
+\end{itemize}
+
+
+We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain poem.
+
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.9\linewidth]{tsne.png}
-	\caption{Projections of most frequent characters to a 2-D space using the word embedding model}
-	\label{fig:VSM}
+	\includegraphics[width=1\linewidth]{poem_template}
+	\caption{A Song Ci generated using LSTM}
+	\label{fig:poetry}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=1\linewidth]{poem_template2}
+	\caption{A Song Ci generated using Genetic Algorithm }
+	\label{fig:poetry}
+
 \end{figure}
 
 
-
-\subsubsection{Implementation of RNN Model} 
-%
-We used deep learning Python modules called \emph{TensorFlow} \cite{tensorflow} to implement our RNN model. 
-%
-We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain poem.
-\begin{figure*}[htbp]
-	\centering
-	\includegraphics[width=0.8\linewidth]{poem_template}
-	\caption{A Song Ci generated using LSTM}
-	\label{fig:poetry}
-\end{figure*}
-
-\begin{figure*}[htbp]
-	\centering
-	\includegraphics[width=0.8\linewidth]{poem_template2}
-	\caption{A Song Ci generated using Genetic Algorithm }
-	\label{fig:poetry}
-\end{figure*}
-
-\subsubsection{Implementation of SeqGAN Model} 
+\subsubsection{Implementation of SeqGAN Model} n
 
 The SeqGAN model is implemented using TensorFlow \cite{tensorflow}. We first read all the data from text files, then convert all the Chinese character to integer vectors. Since Ci has different length, we also use the special placeholder to fill the space after the end of the text. The sequence length is adjusted based on task. For general Ci generation, we use 128 as sequence length. For Huanxisha generation, we use 48 as sequence length. We use an adaptive learning optimization algorithm called Adam \cite{kingma2014adam} to optimize our CNNs with initial learning rate $ =  0.01 $.
 
@@ -189,3 +197,4 @@ For the generator, we use LSTM cell \cite{hochreiter1997lstm} as the unit of hid
 The discriminator is a convolutional neural network for 2 classes classification. The input matrix is from the embedding of discrete tokens. Convolutional kernel applied to the input matrix to extract features. In our implementation, all convolution operation use $ [1, 1, 1, 1]  $ as its strides and valid padding. In the real implementation, a series of the diffrent number of the convolutional kernel with different window size is applied to extract different features. The model also adopt highway structure \cite{srivastava2015highway} and dropout (dropout rate $ = 0.25 $)\cite{hinton2012dropout} to further improve the performance. The loss function of CNNs is cross entropy loss function with l2 norm regularization term. In the experiment, the coefficient of l2 norm $ \lambda =  0.2 $. We use an adaptive learning optimization algorithm called Adam \cite{kingma2014adam} to optimize our CNNs with initial learning rate $ =  1e^{-4} $. We still use Adam optimizer with $ 1e^{-4} $ as its learning rate.
 
 To train the SeqGAN model, we use the computational node provided by High-Performance Computing Center from Michigan State University. Most training job running use a single Nvidia Tesla K80 GPU in the  intel16-k80 clusters. For Huanxisha generation, a 12-hour job generates 79000 poems.
+
