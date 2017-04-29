@@ -89,11 +89,19 @@ When the population reached a certain stop criteria, for example a satisfactory 
 \subsection{Recurrent Neural Network}  
 RNNs are the family of the deep learning structures to process sequential data  \cite{rumelhart1986}.
 %
+It is specialized for processing a sequence of valuesx $x^{(1)}, x^{(2)}, \dots, x^{(t)}$.
+%
 Parameter sharing across the different parts of the model is the key idea that makes RNNs to be able to deal with the sequential data.
 %
 However, a simple RNNs cannot learn long time dependency as in the optimization this term tends to vanish or explode very fast \cite{goodfellow2016deeplearning}.
 %
 To solve this challenge, gated RNNs is proposed and becomes one of the most effective practical models that used for sequential data.
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.9\linewidth]{rnn_overview}
+	\caption{A Recurrent Neural Network}
+	\label{fig:rnn_overview}
+\end{figure}
 
 \subsubsection{Long Short Term Memory}
 Long short-term memory (LSTM) model \cite{hochreiter1997lstm} is one branch of such gated RNNs that is extremely successful in the application like speech recognition, machine translation, and handwriting generation.
@@ -140,6 +148,9 @@ Generative Adversarial Network (GANs) \cite{goodfellow2014gan} is a very popular
 	\caption{"Criminal" and "Police" example of GAN　model}
 	\label{fig:GANcash}
 \end{figure}
+
+
+
 
 Underlying scheme of GAN is the competition of generator network and discriminator network in a game theoretic scenario. Intuitively, we can think a scenario of money counterfeiting criminals and policemen. The generator, in this scenario the criminals, want to produce the counterfeited currency without detected by police. And the discriminator, in this case police, want to detect the fake currency. Both criminals and police will improve their methods to compete with each others in the scenario. Ideally,  the competition will reach a zero-sum game, which counterfeits are indistinguishable from the genuine articles, and the discriminator output $ \frac{1}{2} $ everywhere.
  

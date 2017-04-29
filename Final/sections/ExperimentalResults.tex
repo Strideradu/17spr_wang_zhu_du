@@ -1,8 +1,7 @@
 % !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17spr_wang_zhu_du/Final/final_report.tex
 \section{Evalutaion}
-
-\subsection{Completed Milestones}
-%
+For each of the three approaches, we use the same preprocessing steps to get the same features. Then we compare among the  Song Ci generated from the three approaches based on three metrics : structure, rhyme, and semantics. 
+\input{sections/DataDescription}
 \subsubsection{Background Survey}
 % For this initial step, we plan to search for related works to computational literary creation to gain the basic knowledge of Song Ci.
 %
@@ -159,10 +158,12 @@ We give a visualized result in Figure \ref{fig:VSM}. The figure is embeded with 
 	\caption{Projections of most frequent characters to a 2-D space using the word embedding model}
 	\label{fig:VSM}
 \end{figure}
-\subsubsection{ Implementation of a RNN + LSTM Model  }
-We implement a preliminary version of our model. It is a RNN model with Long Short Term Memory units (LSTM), which can capture long-term dependencies.
+
+
+
+\subsubsection{Implementation of RNN Model} 
 %
-We used deep learning packages called \emph{TensorFlow} \cite{tensorflow} to implement our model. The code is written in Python.
+We used deep learning Python modules called \emph{TensorFlow} \cite{tensorflow} to implement our RNN model. 
 %
 We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain poem.
 \begin{figure*}[htbp]
