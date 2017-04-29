@@ -179,3 +179,13 @@ We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain 
 	\caption{A Song Ci generated using Genetic Algorithm }
 	\label{fig:poetry}
 \end{figure*}
+
+\subsubsection{Implementation of SeqGAN Model} 
+
+The SeqGAN model is implemented using TensorFlow \cite{tensorflow}. We first read all the data from text files, then convert all the Chinese character to integer vectors. Since Ci has different length, we also use the special placeholder to fill the space after the end of the text. The sequence length is adjusted based on task. For general Ci generation, we use 128 as sequence length. For Huanxisha generation, we use 48 as sequence length. We use an adaptive learning optimization algorithm called Adam \cite{kingma2014adam} to optimize our CNNs with initial learning rate $ =  0.01 $.
+
+For the generator, we use LSTM cell \cite{hochreiter1997lstm} as the unit of hidden layers of recurrence neural networks. Right now, our implementation has 64 units in the hidden layers of RNNs.
+
+The discriminator is a convolutional neural network for 2 classes classification. The input matrix is from the embedding of discrete tokens. Convolutional kernel applied to the input matrix to extract features. In our implementation, all convolution operation use $ [1, 1, 1, 1]  $ as its strides and valid padding. In the real implementation, a series of the diffrent number of the convolutional kernel with different window size is applied to extract different features. The model also adopt highway structure \cite{srivastava2015highway} and dropout (dropout rate $ = 0.25 $)\cite{hinton2012dropout} to further improve the performance. The loss function of CNNs is cross entropy loss function with l2 norm regularization term. In the experiment, the coefficient of l2 norm $ \lambda =  0.2 $. We use an adaptive learning optimization algorithm called Adam \cite{kingma2014adam} to optimize our CNNs with initial learning rate $ =  1e^{-4} $. We still use Adam optimizer with $ 1e^{-4} $ as its learning rate.
+
+To train the SeqGAN model, we use the computational node provided by High-Performance Computing Center from Michigan State University. Most training job running use a single Nvidia Tesla K80 GPU in the  intel16-k80 clusters. For Huanxisha generation, a 12-hour job generates 79000 poems.

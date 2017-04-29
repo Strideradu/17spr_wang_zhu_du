@@ -136,23 +136,23 @@ LSTM is proven to be able to learn long-term dependencies more effectively than 
 \end{figure} 
 
 \subsection{Generative Adversarial Networks}
-Deep generative model is one of the most promising approached to achieve the target than analyze and understand real-word data, such like image, video, and text. The main characteristic of generative model is trying to model the distribution of input implicitly or explicitly \cite{christopher2006prml}. So it possible to generate synthetic data points in the input space.
+Deep generative model is one of the most promising approached to achieve the target than analyze and understand real-world data, such as images, video, and text. The main characteristic of generative model is trying to model the distribution of input implicitly or explicitly \cite{christopher2006prml}. So it possible to generate synthetic data points in the input space.
 
 Differentiable generator network is the key idea for many different generative models. Neural network can be treated as a differentiable function $ g(\bm{z};\bm{\theta}^{(g)}) $, transforming sample of latent variables $ \mathbf{z} $ to samples $ \mathbf{x} $ or to distributions over $ \mathbf{x} $ \cite{goodfellow2016deeplearning}.
 
-Generative Adversarial Network (GANs) \cite{goodfellow2014gan} is a very popular different generative models by pairing the generator network with a discriminator network.
+Generative Adversarial Network (GANs) \cite{goodfellow2014gan} is a very popular differentiable generative models by pairing the generator network with a discriminator network.
 
 \begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.9\linewidth]{GAN_conterfeit_cash.png}
-	\caption{"Criminal" and "Police" example of GAN　model}
-	\label{fig:GANcash}
+    \centering
+    \includegraphics[width=0.9\linewidth]{GAN_conterfeit_cash.png}
+    \caption{"Criminal" and "Police" example of GAN　model}
+    \label{fig:GANcash}
 \end{figure}
 
 
 
 
-Underlying scheme of GAN is the competition of generator network and discriminator network in a game theoretic scenario. Intuitively, we can think a scenario of money counterfeiting criminals and policemen. The generator, in this scenario the criminals, want to produce the counterfeited currency without detected by police. And the discriminator, in this case police, want to detect the fake currency. Both criminals and police will improve their methods to compete with each others in the scenario. Ideally,  the competition will reach a zero-sum game, which counterfeits are indistinguishable from the genuine articles, and the discriminator output $ \frac{1}{2} $ everywhere.
+Underlying scheme of GAN is the competition of generator network and discriminator network in a game theoretic scenario. Intuitively, we can think a scenario of money counterfeiting criminals and policemen. The generator, in this scenario the criminals, wants to produce the counterfeited currency without detected by police. And the discriminator, in this case, police, wants to detect the fake currency. Both criminals and police will improve their methods to compete with each other in the scenario. Ideally,  the competition will reach a zero-sum game, which counterfeits are indistinguishable from the genuine articles, and the discriminator output $ \frac{1}{2} $ everywhere.
  
 To formulate the learning of GANs, we can use a function $ v(\bm{\theta}^{(g)}, \bm{\theta}^{(d)}) $. In the contrast, the generator receives $ -v(\bm{\theta}^{(g)} $ as its own payoff. At the convergence $ g^* $, we have:
 \[ g^* = \arg \min_{g} \max_{d}v(g, d) \]
@@ -162,13 +162,13 @@ And the payoff function $ v $ is given by:
 
 This will drive generator attempt to emulate to the real sample so that it can fool the classifiers. Meantime, the discriminator will attempt to learn to correctly classify real and fake samples.
 
-Original GANs focusing on using convolutional neural network based model to generate image data. By constructing the generator and discriminator using RNNs replacing CNNs, we can build a GANs to generate sequential data. For example, C-RNN-GAN model \cite{mogren2016crnngan} use recurrent neural network based GAN to generate continue music data. 
+Original GANs focusing on using convolutional neural networks based model to generate image data. By constructing the generator and discriminator using RNNs replacing CNNs, we can build a GANs to generate sequential data. For example, C-RNN-GAN model \cite{mogren2016crnngan} use recurrent neural network based GAN to generate continue music data. 
 
 \begin{figure}[htbp]
-	\centering
-	\includegraphics[width=0.9\linewidth]{SwqGAN.jpg}
-	\caption{The scheme of SeqGAN model}
-	\label{fig:seqGAN}
+    \centering
+    \includegraphics[width=0.9\linewidth]{SwqGAN.jpg}
+    \caption{The scheme of SeqGAN model}
+    \label{fig:seqGAN}
 \end{figure}
 
-However, to apply GANs on sequential data with discrete token is not-trivial \cite{huszar2015}. For discrete sequence, the sampling process cannot be described by a differentiable process we discussed before. So an alternative approach is propose for SeqGAN Model \cite{yu2016seqgan}. The generator in the SeqGAN is treated as an agent of reinforcement learning. Discriminator will evaluate the sequence and the feedback of discriminator will used as guide of learning of generator. The generative model is trained by policy gradient, avoid the challenge of differential of discrete tokens in traditional GANs. SeqGAN model uses RNNs as generator and CNNs for discriminator.
+However, to apply GANs on sequential data with the discrete token is non-trivial \cite{huszar2015}. For the discrete sequence, the sampling process cannot be described by a differentiable process we discussed before. So an alternative approach is proposed for SeqGAN Model \cite{yu2016seqgan}. The generator in the SeqGAN is treated as an agent of reinforcement learning. Discriminator will evaluate the sequence and the feedback of discriminator will be used as the guide of learning of generator. The generative model is trained by policy gradient, avoid the challenge of the differential of discrete tokens in traditional GANs. SeqGAN model uses RNNs as generator and CNNs for the discriminator.
