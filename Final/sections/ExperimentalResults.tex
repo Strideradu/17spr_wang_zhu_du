@@ -24,7 +24,7 @@ This actually gives traditional poems much freedom on expression.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.9\linewidth]{syntactic.png}
-	\caption{Syntactic Patterns for Sentences with Different Length.}
+	\caption{Syntactic patterns for sentences with different length.}
 	\label{fig:syntactic}
 \end{figure}
 
@@ -55,7 +55,7 @@ Each sentence will apply the syntactic pattern previous defined.
 \begin{figure}[htbp]
 	\centering
 	\includegraphics[width=0.9\linewidth]{GA.png}
-	\caption{Process of Generating Song Ci by Genetic Algorithm}
+	\caption{Process of generating Song Ci by Genetic Algorithm}
 	\label{fig:GA}
 \end{figure}
 
@@ -121,7 +121,7 @@ The core of the model consists of an LSTM cell that processes one word at a time
 %
 The general workflow of our model is shown in Figure \ref{fig:rnn_workflow}.
 %
-aThe memory state of the network is initialized with a vector of zeros and gets updated after reading each word. 
+The memory state of the network is initialized with a vector of zeros and gets updated after reading each word. 
 
 
 
@@ -151,44 +151,25 @@ aThe memory state of the network is initialized with a vector of zeros and gets 
 \begin{itemize}
 \item \textbf{Batch Input.} We want to train the RNN model in an iterative fashion, so the first step is to seperate the training set into different batches with the same size. The larger the batch, the less epoch time the model needs to finish training. In our model, we tune the batch size to be 64, so each time a set of 64 Song Ci will be used as the input to our model, and the value of the model state is updated after processing each batch of texts.
 
-\item \textbf{Truncated Backpropagation} In order to make the learning process tractable, it is important to create an unrolled version of the network which contains a fixed number of LSTM inputs and outputs, known as the number of steps. The model is then trained on this finite approximation of the RNN. 
+\item \textbf{Truncated Backpropagation.} In order to make the learning process tractable, it is important to create an unrolled version of the network which contains a fixed number of LSTM inputs and outputs, known as the number of steps. The model is then trained on this finite approximation of the RNN. 
 %
 In our model, we tune the number of steps to be the ideal character length in the Song Ci with a specified Ci Pai. For example, in order to train a Song Ci with Ci Pai ''Sandy Creek Washers", we set this number to be 48, because the input Song Ci is all of length 48 at a time.
 %
 Then we can perform a backward pass after each such input block.
 
-\item \textbf{Optimizing Loss Function} We aim to minimize the average negative log probability of the target words: 
+\item \textbf{Optimizing Loss Function.} We aim to minimize the average negative log probability of the target words: 
 \begin{align*}
 \text{loss} = -\frac{1}{N} \sum_{i=1}^{N} \ln p_{target_i}
 \end{align*}
 We implement by using \emph{TensorFlow} 's \emph{seq2seq} library. It will generate the weighted cross-entropy loss for a sequence of logits, based on three inputs: the logits, the targets, and the weights. 
 
  
-\item \textbf{Stacking Multiple LSTMs} We  use multiple layers of LSTMs to process the data so that the output of the current layer will become the input of its succesor.
+\item \textbf{Stacking Multiple LSTMs.} We  use multiple layers of LSTMs to process the data so that the output of the current layer will become the input of its succesor.
 %
 In our model,  we use the libray called \emph{MultiRNNCell} to implement three LSTM networks to strike a balance between the training time and the quality of the model output.
 \end{itemize}
 
-
-We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain poem.
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=1\linewidth]{poem_template}
-	\caption{A Song Ci generated using LSTM}
-	\label{fig:poetry}
-\end{figure}
-
-\begin{figure}[htbp]
-	\centering
-	\includegraphics[width=1\linewidth]{poem_template2}
-	\caption{A Song Ci generated using Genetic Algorithm }
-	\label{fig:poetry}
-
-\end{figure}
-
-
-\subsubsection{Implementation of SeqGAN Model} n
+\subsection{Implementation of SeqGAN Model.} 
 
 The SeqGAN model is implemented using TensorFlow \cite{tensorflow}. We first read all the data from text files, then convert all the Chinese character to integer vectors. Since Ci has different length, we also use the special placeholder to fill the space after the end of the text. The sequence length is adjusted based on task. For general Ci generation, we use 128 as sequence length. For Huanxisha generation, we use 48 as sequence length. We use an adaptive learning optimization algorithm called Adam \cite{kingma2014adam} to optimize our CNNs with initial learning rate $ =  0.01 $.
 
@@ -197,4 +178,41 @@ For the generator, we use LSTM cell \cite{hochreiter1997lstm} as the unit of hid
 The discriminator is a convolutional neural network for 2 classes classification. The input matrix is from the embedding of discrete tokens. Convolutional kernel applied to the input matrix to extract features. In our implementation, all convolution operation use $ [1, 1, 1, 1]  $ as its strides and valid padding. In the real implementation, a series of the diffrent number of the convolutional kernel with different window size is applied to extract different features. The model also adopt highway structure \cite{srivastava2015highway} and dropout (dropout rate $ = 0.25 $)\cite{hinton2012dropout} to further improve the performance. The loss function of CNNs is cross entropy loss function with l2 norm regularization term. In the experiment, the coefficient of l2 norm $ \lambda =  0.2 $. We use an adaptive learning optimization algorithm called Adam \cite{kingma2014adam} to optimize our CNNs with initial learning rate $ =  1e^{-4} $. We still use Adam optimizer with $ 1e^{-4} $ as its learning rate.
 
 To train the SeqGAN model, we use the computational node provided by High-Performance Computing Center from Michigan State University. Most training job running use a single Nvidia Tesla K80 GPU in the  intel16-k80 clusters. For Huanxisha generation, a 12-hour job generates 79000 poems.
+ 
 
+ 
+
+\subsection {Results Comparision}
+We present  the Song Ci generated by our three models respectively, as shown in Figure \ref{fig:poem_template}, Figure \ref{fig:poem_template2}, and Figure \ref{fig:poem_template3}. We evaluate the quality of our results based on human evaluation by 3 graduate students.
+
+For both results generated by GA and RNN model, they maintain good property on the structure as well as rhythmic constraints. %
+They also convey consistent meanings with poetic semantics. For GAN model, the good performance relies on carefully designed rules and constraints and a evaluation function. 
+%
+For RNN model, the good performance relies on a large set of training data, so that the structure or rhyme rules can be captured automatically.
+
+For results generated by GAN model, it maintains the correct structure and gramma rules, but it does not capture the rhythmic patterns nor the semantic consistency.
+
+ \begin{figure}[ht]
+\begin{minipage}[t]{1.1\linewidth}
+\centering 
+\subfigure[A Song Ci generated using Genetic Algorithm]{
+   \includegraphics[width=1\linewidth] {poem_template2}
+   \label{fig:poem_template2}
+ }
+ 
+ \subfigure[A Song Ci generated using LSTM]{
+   \includegraphics[width=1\linewidth] {poem_template}
+   \label{fig:poem_template}
+ } 
+ 
+ \subfigure[A Song Ci generated using GAN]{
+   \includegraphics[width=1\linewidth] {poem_template3}
+   \label{fig:poem_template3}
+ } 
+\caption{\textbf{Song Ci generated Using Three Different Approaches}}
+\label{fig:songci}
+\end{minipage}
+\end{figure}
+
+
+ 
