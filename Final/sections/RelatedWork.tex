@@ -1,4 +1,4 @@
-% !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17Project/17spr_wang_zhu_du/Middle/middle_report.tex
+% !TEX root = /Users/zhuzhuangdi/Desktop/MSUCourses/MachineLearning847/17spr_wang_zhu_du/Final/final_report.tex
 \section{Related Work}   
 Approaches to poetry automatic generation can be divided into the following categories.
 
@@ -6,18 +6,25 @@ Approaches to poetry automatic generation can be divided into the following cate
 %
 This approach adopts templates to generate poems that comply with a set of rules and constraints.
 %
-These rules may be derived from user queries and additional lexical resources\cite{wu2009new,tosa2008hitch},  parts of speech and WordNet patterns \cite{netzer2009gaiku},  or from semantic and grammar templates \cite{oliveira2012poetryme}. 
+These rules may be derived from user queries and additional lexical resources\cite{wu2009new,tosa2008hitch},  parts of speech and WordNet patterns \cite{netzer2009gaiku},  or from semantic and grammar templates \cite{oliveira2012poetryme}.
+% 
+Some other approaches consider the poetry generation as an optimization problem based on a summarization framework with several constraints \cite{yan2013poet}.
 
 \textbf {Using genetic algorithms.} This approach is mainly based on natural selection. It generates all possible candidates, and use search and evaluation algorithms to select the optimal one\cite{manurung2004evolutionary,manurung2012using}.
 %
-
-\textbf{Using Statistical Machine Translation (SMT) methods.}
-%A similar study was conducted on the rap lyrics\cite{malmi2015dopelearning}.Feature related to rhyming, structure similarity, and semantic similarity were used fro rankSVM algorithm. %The algorithm will try to generate a linear model that can give two lines from a lyrics a relevance score. The score is used to generate the prediction of next line lyrics from a given line of lyrics\cite{manurung2004evolutionary}.
- This approach first receives keywords and extract most relevant constituents to theses keywords.  Next, it generates poems by iteratively selecting among these constituents based on phonological, structural, and poetic requirements \cite{jiang2008generating}. 
-
-\textbf{Using neural network.}  Recently, approach using neural network have achieved great success in poem generation.
+For example, Zhou et al.\cite{zhou2010genetic} proposed an approach in 2016 to automatically generate Song Ci by genetic algorithm.
 %
+They implemented a fitness function that is designed for evaluate the performance of Song Ci by considering the level and oblique tones-based coding method and the syntactic and semantic correctness.
+
+
+\textbf{Using Statistical Machine Translation (SMT) methods.} 
+ This approach first receives keywords and extract most relevant constituents to theses keywords.  Next, it generates poems by iteratively selecting among these constituents based on phonological, structural, and poetic requirements \cite{jiang2008generating}.  
+
+\textbf{Using neural network.}  Recently, approach using neural network have achieved great success in poem generation, which considers the poetry generation as a sequence-to-sequence generation problem.
+% 
 In general, this kind of approach will generate new sentence based on previously generated content, so that the generated sentence can capture the semantic consistency automatically \cite{wang2016chinese,bahdanau2014neural}.
 %
 For example, Zhang \etal built a quatrain generation model using a Recurrent Neural Network model.  Their model generates the first line of the poetry from the given keywords, and then generate subsequent lines by backtracking the status of the lines previously generated.
 % 
+
+\textbf{Using GAN} \nan{Softy kitty warm kitty little ball of fur ...}
