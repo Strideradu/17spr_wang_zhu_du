@@ -95,7 +95,7 @@ The whole process is shown in Figure \ref{fig:GA}.
 Final results are shown in following section.
 
 
-\subsection{ Implementation of a Word Embedding Model }
+\subsection{Implementation of a Word Embedding Model }
 A word embedding model represent words in a continuous vector space where semantically similar words are mapped to nearby points.
 %We implemented this model to find the semantic relations between each Chinese character, so that given a few of keyword characters, such as 'spring' and 'beauty', we can generate poetries with coherent meanings using characters which are close to these keywords in the vector space.
 %
@@ -105,21 +105,24 @@ We give a visualized result in Figure \ref{fig:VSM}.
 %
 Each of the Chinese characters is embedded into a 2-D space, which are randomly chosen from the most frequent 500 Chinese characters in the Song Ci corpus. The 2-D space corresponds to the first two dimensions in the vector space. We can see that words such as `spring', `sunny', and `breeze' are very close in the 2-D space, which convey similar sentimental feelings to readers.
 
-
 \begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.9\linewidth]{tsne.png}
+	\includegraphics[width=1\linewidth]{tsne.png}
 	\caption{Projections of most frequent characters to a 2-D space using the word embedding model}
 	\label{fig:VSM}
 \end{figure}
 
 
-
 \subsection{Implementation of an RNN Model} 
 %
-We used deep learning Python modules called \emph{TensorFlow} \cite{tensorflow} to implement our RNN model. 
+We used deep learning Python modules called \emph{TensorFlow} \cite{tensorflow} to implement our RNN model. The core parameters are given in Table \ref{fig:rnn_workflow}.
 %
-We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain poem.
+The core of the model consists of an LSTM cell that processes one word at a time and computes probabilities of the possible values for the next word in the sentence. 
+%
+The general workflow of our model is shown in Figure \ref{fig:rnn_workflow}.
+%
+The memory state of the network is initialized with a vector of zeros and gets updated after reading each word. 
+
 
 
 \begin{figure}[htbp]
@@ -129,16 +132,56 @@ We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain 
 	\label{fig:rnn_workflow}
 \end{figure}
 
-\begin{figure*}[htbp]
+\begin{table}[htpb]
+\centering
+\caption{RNN model parameters}
+\label{table:rnn}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Parameter}      & \textbf{Value} \\ \hline
+\textbf{batch\_size}    & 64             \\ \hline
+\textbf{embedding size} & 64             \\ \hline
+\textbf{hidden layer}   & 48             \\ \hline
+\textbf{dropout rate}   & 0.8            \\ \hline
+\textbf{learning rate}  & 0.0001         \\ \hline
+\textbf{epoch time}     & 50             \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{itemize}
+\item \textbf{Batch Input.} We want to train the RNN model in an iterative fashion, so the first step is to seperate the training set into different batches with the same size. The larger the batch, the less epoch time the model needs to finish training. In our model, we tune the batch size to be 64, so each time a set of 64 Song Ci will be used as the input to our model, and the value of the model state is updated after processing each batch of texts.
+
+\item \textbf{Truncated Backpropagation} In order to make the learning process tractable, it is important to create an unrolled version of the network which contains a fixed number of LSTM inputs and outputs, known as the number of steps. The model is then trained on this finite approximation of the RNN. 
+%
+In our model, we tune the number of steps to be the ideal character length in the Song Ci with a specified Ci Pai. For example, in order to train a Song Ci with Ci Pai ''Sandy Creek Washers", we set this number to be 48, because the input Song Ci is all of length 48 at a time.
+%
+Then we can perform a backward pass after each such input block.
+
+\item \textbf{Optimizing Loss Function} We aim to minimize the average negative log probability of the target words: 
+\begin{align*}
+\text{loss} = -\frac{1}{N} \sum_{i=1}^{N} \ln p_{target_i}
+\end{align*}
+We implement by using \emph{TensorFlow} 's \emph{seq2seq} library. It will generate the weighted cross-entropy loss for a sequence of logits, based on three inputs: the logits, the targets, and the weights. 
+
+ 
+\item \textbf{Stacking Multiple LSTMs} We  use multiple layers of LSTMs to process the data so that the output of the current layer will become the input of its succesor.
+%
+In our model,  we use the libray called \emph{MultiRNNCell} to implement three LSTM networks to strike a balance between the training time and the quality of the model output.
+\end{itemize}
+
+
+We present a preliminary result in Figure \ref{fig:poetry}, which is a quatrain poem.
+
+\begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.8\linewidth]{poem_template}
+	\includegraphics[width=1\linewidth]{poem_template}
 	\caption{A Song Ci generated using LSTM}
 	\label{fig:poetry}
-\end{figure*}
+\end{figure}
 
-\begin{figure*}[htbp]
+\begin{figure}[htbp]
 	\centering
-	\includegraphics[width=0.8\linewidth]{poem_template2}
+	\includegraphics[width=1\linewidth]{poem_template2}
 	\caption{A Song Ci generated using Genetic Algorithm }
 	\label{fig:poetry}
-\end{figure*}
+\end{figure}
